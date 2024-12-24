@@ -15,7 +15,7 @@ export default function App() {
     return (
         <Provider store={store}>
             <NavigationContainer>
-                <Stack.Navigator initialRouteName={RouteConfig.COUNTER}>
+                <Stack.Navigator initialRouteName={RouteConfig.TODO_LIST}>
                     <Stack.Screen name={RouteConfig.TODO_LIST} component={TodoList}/>
                     <Stack.Screen name={RouteConfig.ADD_TODO} component={AddTodoScreen}/>
                     <Stack.Screen name={RouteConfig.COUNTER} component={CounterScreen}/>

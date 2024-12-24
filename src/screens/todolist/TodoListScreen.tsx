@@ -1,6 +1,6 @@
 //Todos列表组件
 import React, { Component } from "react";
-import { FlatList, View, Text } from "react-native";
+import { FlatList, View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 
 import { fetchTodosAsync } from "../../store/todos/todosActions";
@@ -16,6 +16,8 @@ import { ThemeConsumer } from "../../context/ThemeProvider";
 interface TodoListProps {
     navigation: NavigationProp<any>;
     todos: Todo[];
+    loading: boolean;
+    error: string | null;
     fetchTodos: () => void;
 }
 
@@ -29,7 +31,7 @@ class TodoListScreen extends Component<TodoListProps> {
     };
 
     render() {
-        const { todos } = this.props;
+        const { todos, loading, error } = this.props;
 
         //Tip：类组件，ThemeConsumer获取主题全局状态
         return (
@@ -41,15 +43,25 @@ class TodoListScreen extends Component<TodoListProps> {
                         >
                             Todo List
                         </Text>
-                        <FlatList
-                            data={todos}
-                            renderItem={({ item }) => <TodoItem todo={item} />}
-                            keyExtractor={(item) => item.id.toString()}
-                        />
-                        <TodoButton
-                            title="Add Todo"
-                            onPress={this.handleAddTodo}
-                        />
+                        <View style={styles.listContainer}>
+                            {loading ? (
+                                <ActivityIndicator size="large" color="#0000ff" />
+                            ) : error ? (
+                                <Text style={styles.errorText}>Error: {error}</Text>
+                            ) : (
+                                <FlatList
+                                    data={todos}
+                                    renderItem={({ item }) => <TodoItem todo={item} />}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    style={styles.flatList}
+                                />
+                            )}
+                            <TodoButton
+                                title="Add Todo"
+                                onPress={this.handleAddTodo}
+                                style={styles.addButton}
+                            />
+                        </View>
                     </View>
                 )}
             </ThemeConsumer>
@@ -59,6 +71,8 @@ class TodoListScreen extends Component<TodoListProps> {
 
 const mapStateToProps = (state: any) => ({
     todos: state.todos.todos || [],
+    loading: state.todos.loading,
+    error: state.todos.error,
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
@@ -66,3 +80,23 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TodoListScreen);
+
+// Styles
+const styles = StyleSheet.create({
+    listContainer: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    flatList: {
+        flex: 1,
+    },
+    addButton: {
+        alignSelf: 'center',
+        marginBottom: 20,
+        width: '100%',
+    },
+    errorText: {
+        textAlign: 'center',
+        color: 'red',
+    },
+});
