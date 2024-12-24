@@ -12,6 +12,7 @@ import { RouteConfig } from "../../config/routeConfig";
 import type { AppDispatch } from "../../store/rootReducer";
 import type { Todo } from "../../types/todos";
 import { ThemeConsumer } from "../../context/ThemeProvider";
+import { selectTodos, selectLoading, selectError } from "../../store/todos/todosSelectors";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
@@ -70,9 +71,9 @@ class TodoListScreen extends Component<TodoListProps> {
 }
 
 const mapStateToProps = (state: any) => ({
-    todos: state.todos.todos || [],
-    loading: state.todos.loading,
-    error: state.todos.error,
+    todos: selectTodos(state),
+    loading: selectLoading(state),
+    error: selectError(state),
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
