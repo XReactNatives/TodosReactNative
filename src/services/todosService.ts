@@ -1,9 +1,10 @@
 // Todos API 请求
 import { apiConfig } from "../config/apiConfig";
+import type { Todo } from "../types/todos";
 
 const apiUrl = `${apiConfig.baseURL}/todos`;
 
-export const fetchTodosFromAPI = async () => {
+export const fetchTodosFromAPI = async (): Promise<Todo[]> => {
     const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
@@ -15,5 +16,6 @@ export const fetchTodosFromAPI = async () => {
         throw new Error("Network response was not ok");
     }
 
-    return await response.json();
+    const data: Todo[] = await response.json();
+    return data;
 };
