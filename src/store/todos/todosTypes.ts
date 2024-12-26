@@ -6,7 +6,7 @@ export const MARK_TODO_AS_DONE = "MARK_TODO_AS_DONE";
 export const FETCH_TODOS_REQUEST = "FETCH_TODOS_REQUEST";
 export const FETCH_TODOS_SUCCESS = "FETCH_TODOS_SUCCESS";
 export const FETCH_TODOS_FAILURE = "FETCH_TODOS_FAILURE";
-
+export const TOGGLE_SECTION = "TOGGLE_SECTION";
 
 export interface TodoAction {
     type: string;

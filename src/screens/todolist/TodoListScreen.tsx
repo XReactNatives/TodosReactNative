@@ -1,25 +1,26 @@
 //Todos列表组件
 import React, { Component } from "react";
-import { FlatList, View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 import { connect } from "react-redux";
 
-import { fetchTodosWithUsernamesAsync } from "../../store/todos/todosActions";
+import { fetchTodosWithUsernamesAsync, toggleSection } from "../../store/todos/todosActions";
 import TodoItem from "./TodoItem";
 import TodoButton from "../../components/TodoButton";
 import type { NavigationProp } from "@react-navigation/native";
 import { styles as commonStyles } from "../../styles/styles";
 import { RouteConfig } from "../../config/routeConfig";
 import type { AppDispatch } from "../../store/rootReducer";
-import type { TodoWithUsername } from "../../types/ui";
+import type { Section } from "../../store/todos/todosReducer";
 import { ThemeConsumer } from "../../context/ThemeProvider";
-import { selectTodos, selectLoading, selectError } from "../../store/todos/todosSelectors";
+import { selectSections, selectLoading, selectError } from "../../store/todos/todosSelectors";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
-    todos: TodoWithUsername[];
+    sections: Section[];
     loading: boolean;
     error: string | null;
     fetchTodos: () => void;
+    toggleSection: (title: string) => void;
 }
 
 class TodoListScreen extends Component<TodoListProps> {
@@ -32,16 +33,14 @@ class TodoListScreen extends Component<TodoListProps> {
     };
 
     render() {
-        const { todos, loading, error } = this.props;
+        const { sections, loading, error } = this.props;
 
         //Tip：类组件，ThemeConsumer获取主题全局状态
         return (
             <ThemeConsumer>
                 {({ titleColor }) => (
                     <View style={commonStyles.container}>
-                        <Text
-                            style={[{ color: titleColor }, commonStyles.title]}
-                        >
+                        <Text style={[{ color: titleColor }, commonStyles.title]}>
                             Todo List
                         </Text>
                         <View style={styles.listContainer}>
@@ -50,10 +49,19 @@ class TodoListScreen extends Component<TodoListProps> {
                             ) : error ? (
                                 <Text style={styles.errorText}>Error: {error}</Text>
                             ) : (
-                                <FlatList
-                                    data={todos}
-                                    renderItem={({ item }) => <TodoItem todo={item} />}
+                                <SectionList
+                                    sections={sections}
                                     keyExtractor={(item) => item.id.toString()}
+                                    renderSectionHeader={({ section: { title, expanded } }) => (
+                                        <TouchableOpacity onPress={() => this.props.toggleSection(title)}>
+                                            <Text style={styles.sectionHeader}>
+                                                {title} {expanded ? "▼" : "▲"}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    renderItem={({ item, section }) =>
+                                        section.expanded ? <TodoItem todo={item} /> : null
+                                    }
                                     style={styles.flatList}
                                 />
                             )}
@@ -71,13 +79,14 @@ class TodoListScreen extends Component<TodoListProps> {
 }
 
 const mapStateToProps = (state: any) => ({
-    todos: selectTodos(state),
+    sections: selectSections(state),
     loading: selectLoading(state),
     error: selectError(state),
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
     fetchTodos: () => dispatch(fetchTodosWithUsernamesAsync()),
+    toggleSection: (title: string) => dispatch(toggleSection(title)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TodoListScreen);
@@ -99,5 +108,10 @@ const styles = StyleSheet.create({
     errorText: {
         textAlign: 'center',
         color: 'red',
+    },
+    sectionHeader: {
+        padding: 10,
+        backgroundColor: '#f4f4f4',
+        fontWeight: 'bold',
     },
 });

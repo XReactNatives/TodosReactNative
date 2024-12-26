@@ -19,9 +19,9 @@ import type { RootState } from '../rootReducer';
 const selectTodosState = (state: RootState) => state.todos;
 
 // 选择器：获取todos列表
-export const selectTodos = createSelector(
+export const selectSections = createSelector(
     [selectTodosState],
-    (todosState) => todosState.todos
+    (todosState) => todosState.sections
 );
 
 // 选择器：获取加载状态

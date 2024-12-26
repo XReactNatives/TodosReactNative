@@ -6,13 +6,14 @@ import {
     FETCH_TODOS_SUCCESS,
     FETCH_TODOS_FAILURE,
     MARK_TODO_AS_DONE,
+    TOGGLE_SECTION,
 } from "./todosTypes";
-import type {TodoWithUsername} from "../../types/ui";
-import type {TodoAction} from "./todosTypes";
+import type { TodoWithUsername, Section } from "../../types/ui";
+import type { TodoAction } from "./todosTypes";
 
 //Tips：复杂的全局状态管理-redux实现，Todo应用全局状态todos，使用react-redux全局保存
 const initialState = {
-    todos: [] as TodoWithUsername[],
+    sections: [] as Section[],
     loading: false,
     error: null as string | null,
 };
@@ -33,7 +34,7 @@ const todosReducer = (state = initialState, action: TodoAction) => {
             return {                                            //不可变性：返回新的状态对象，不直接修改state
                 ...state,                                       //...运算符，创建状态的副本
                 loading: false,
-                todos: action.payload as TodoWithUsername[],                //更新todos
+                sections: action.payload as Section[],
             };
         case FETCH_TODOS_FAILURE:
             return {
@@ -44,20 +45,37 @@ const todosReducer = (state = initialState, action: TodoAction) => {
         case ADD_TODO:                                          //纯函数：当前动作
             return {                                            //新状态
                 ...state,
-                todos: [...state.todos, action.payload as TodoWithUsername],//当前状态（可选）
+                sections: state.sections.map(section =>
+                    section.title === action.payload.username
+                        ? { ...section, data: [...section.data, action.payload] }
+                        : section
+                ),
             };
         case DELETE_TODO:
             return {
                 ...state,
-                todos: state.todos.filter((todo) => todo.id !== action.payload),
+                sections: state.sections.map(section => ({
+                    ...section,
+                    data: section.data.filter(todo => todo.id !== action.payload),
+                })),
             };
         case MARK_TODO_AS_DONE:
             return {
                 ...state,
-                todos: state.todos.map((todo) =>
-                    todo.id === action.payload
-                        ? {...todo, completed: true}
-                        : todo,
+                sections: state.sections.map(section => ({
+                    ...section,
+                    data: section.data.map(todo =>
+                        todo.id === action.payload ? { ...todo, completed: true } : todo
+                    ),
+                })),
+            };
+        case TOGGLE_SECTION:
+            return {
+                ...state,
+                sections: state.sections.map(section =>
+                    section.title === action.payload
+                        ? { ...section, expanded: !section.expanded }
+                        : section
                 ),
             };
         default:
