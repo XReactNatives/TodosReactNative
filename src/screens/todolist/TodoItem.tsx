@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 
 import { deleteTodo, markTodoAsDone } from "../../store/todos/todosActions";
-import type { TodoWithUsername } from "../../types/todos";
+import type { TodoWithUsername } from "../../types/ui";
 import TodoButton from "../../components/TodoButton";
 
 interface TodoItemProps {
@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     },
     itemText: {
         flex: 1,
-
         fontSize: 16,
         color: "#000",
     },

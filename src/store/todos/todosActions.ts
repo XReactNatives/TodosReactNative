@@ -8,11 +8,10 @@ import {
 } from "./todosTypes";
 import { fetchTodosFromAPI } from "../../services/todosService";
 import { fetchUsersFromAPI } from "../../services/usersService";
-import { Todo } from "../../types/api/todo";
 import type { TodoWithUsername } from "../../types/ui";
 import type { AppDispatch } from "../rootReducer";
 
-export const addTodo = (todo: Todo) => ({
+export const addTodo = (todo: TodoWithUsername) => ({
     type: ADD_TODO,
     payload: todo,
 });

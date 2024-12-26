@@ -7,12 +7,12 @@ import {
     FETCH_TODOS_FAILURE,
     MARK_TODO_AS_DONE,
 } from "./todosTypes";
-import type {Todo} from "../../types/todos";
+import type {TodoWithUsername} from "../../types/ui";
 import type {TodoAction} from "./todosTypes";
 
 //Tips：复杂的全局状态管理-redux实现，Todo应用全局状态todos，使用react-redux全局保存
 const initialState = {
-    todos: [] as Todo[],
+    todos: [] as TodoWithUsername[],
     loading: false,
     error: null as string | null,
 };
@@ -33,7 +33,7 @@ const todosReducer = (state = initialState, action: TodoAction) => {
             return {                                            //不可变性：返回新的状态对象，不直接修改state
                 ...state,                                       //...运算符，创建状态的副本
                 loading: false,
-                todos: action.payload as Todo[],                //更新todos
+                todos: action.payload as TodoWithUsername[],                //更新todos
             };
         case FETCH_TODOS_FAILURE:
             return {
@@ -44,7 +44,7 @@ const todosReducer = (state = initialState, action: TodoAction) => {
         case ADD_TODO:                                          //纯函数：当前动作
             return {                                            //新状态
                 ...state,
-                todos: [...state.todos, action.payload as Todo],//当前状态（可选）
+                todos: [...state.todos, action.payload as TodoWithUsername],//当前状态（可选）
             };
         case DELETE_TODO:
             return {
