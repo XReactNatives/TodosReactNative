@@ -5,3 +5,8 @@ export type Todo = {
     title: string;
     completed: boolean;
 };
+
+// 新的类型定义，包含username
+export type TodoWithUsername = {
+    username: string;
+} & Todo;

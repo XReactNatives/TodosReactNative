@@ -4,11 +4,11 @@ import { View, Text, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 
 import { deleteTodo, markTodoAsDone } from "../../store/todos/todosActions";
-import type { Todo } from "../../types/todos";
+import type { TodoWithUsername } from "../../types/todos";
 import TodoButton from "../../components/TodoButton";
 
 interface TodoItemProps {
-    todo: Todo;
+    todo: TodoWithUsername;
     deleteTodo: (id: number) => void;
     markTodoAsDone: (id: number) => void;
 }
@@ -28,19 +28,24 @@ class TodoItem extends Component<TodoItemProps> {
 
         return (
             <View style={styles.itemContainer}>
-                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                    {todo.title}
-                </Text>
-                {!isDone ? (
-                    <TodoButton title="Done" onPress={this.handleDone} />
-                ) : (
-                    <TodoButton
-                        title="Done"
-                        onPress={() => {}}
-                        style={styles.doneButton}
-                    />
-                )}
-                <TodoButton title="Delete" onPress={this.handleDelete} />
+                <View style={styles.textContainer}>
+                    <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                        {todo.title}
+                    </Text>
+                    <Text style={styles.usernameText}>{todo.username}</Text>
+                </View>
+                <View style={styles.buttonContainer}>
+                    {!isDone ? (
+                        <TodoButton title="Done" onPress={this.handleDone} />
+                    ) : (
+                        <TodoButton
+                            title="Done"
+                            onPress={() => {}}
+                            style={styles.doneButton}
+                        />
+                    )}
+                    <TodoButton title="Delete" onPress={this.handleDelete} />
+                </View>
             </View>
         );
     }
@@ -51,12 +56,27 @@ const styles = StyleSheet.create({
     itemContainer: {
         flexDirection: "row",
         marginBottom: 10,
+        alignItems: "center",
+    },
+    textContainer: {
+        flex: 1,
+    },
+    usernameText: {
+        marginTop: 5,
+        fontSize: 12,
+        color: "#888",
     },
     itemText: {
         flex: 1,
+
+        fontSize: 16,
+        color: "#000",
     },
     strikeThrough: {
         textDecorationLine: "line-through",
+    },
+    buttonContainer: {
+        flexDirection: "row",
     },
     doneButton: {
         backgroundColor: "gray",

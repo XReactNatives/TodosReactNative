@@ -3,20 +3,20 @@ import React, { Component } from "react";
 import { FlatList, View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 
-import { fetchTodosAsync } from "../../store/todos/todosActions";
+import { fetchTodosWithUsernamesAsync } from "../../store/todos/todosActions";
 import TodoItem from "./TodoItem";
 import TodoButton from "../../components/TodoButton";
 import type { NavigationProp } from "@react-navigation/native";
 import { styles as commonStyles } from "../../styles/styles";
 import { RouteConfig } from "../../config/routeConfig";
 import type { AppDispatch } from "../../store/rootReducer";
-import type { Todo } from "../../types/todos";
+import type { TodoWithUsername } from "../../types/todos";
 import { ThemeConsumer } from "../../context/ThemeProvider";
 import { selectTodos, selectLoading, selectError } from "../../store/todos/todosSelectors";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
-    todos: Todo[];
+    todos: TodoWithUsername[];
     loading: boolean;
     error: string | null;
     fetchTodos: () => void;
@@ -77,7 +77,7 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-    fetchTodos: () => dispatch(fetchTodosAsync()),
+    fetchTodos: () => dispatch(fetchTodosWithUsernamesAsync()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TodoListScreen);

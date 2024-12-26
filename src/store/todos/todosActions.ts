@@ -7,7 +7,8 @@ import {
     MARK_TODO_AS_DONE,
 } from "./todosTypes";
 import { fetchTodosFromAPI } from "../../services/todosService";
-import type { Todo } from "../../types/todos";
+import { fetchUsersFromAPI } from "../../services/usersService";
+import type { TodoWithUsername } from "../../types/todos";
 import type { AppDispatch } from "../rootReducer";
 
 export const addTodo = (todo: Todo) => ({
@@ -29,7 +30,7 @@ export const fetchTodosRequest = () => ({
     type: FETCH_TODOS_REQUEST,
 });
 
-export const fetchTodosSuccess = (todos: Todo[]) => ({
+export const fetchTodosSuccess = (todos: TodoWithUsername[]) => ({
     type: FETCH_TODOS_SUCCESS,
     payload: todos,
 });
@@ -39,14 +40,24 @@ export const fetchTodosFailure = (error: string) => ({
     payload: error,
 });
 
-export const fetchTodosAsync = () => async (dispatch: AppDispatch) => {
+// 异步action：获取并组合Todos和Users数据
+export const fetchTodosWithUsernamesAsync = () => async (dispatch: AppDispatch) => {
     dispatch(fetchTodosRequest());
     try {
         const todos = await fetchTodosFromAPI();
-        // Tip：建议单行行注释样例：用户演示，只取前10个Todo展示
-        const firstTenTodos = todos.slice(0, 10);
-        dispatch(fetchTodosSuccess(firstTenTodos));
+        const users = await fetchUsersFromAPI();
+
+        const todosWithUsernames: TodoWithUsername[] = todos.map(todo => {
+            const user = users.find(user => user.id === todo.userId);
+            return {
+                username: user ? user.username : "Unknown",
+                ...todo,
+            };
+        });
+
+        dispatch(fetchTodosSuccess(todosWithUsernames));
     } catch (error) {
         dispatch(fetchTodosFailure(error.message));
     }
 };
+
