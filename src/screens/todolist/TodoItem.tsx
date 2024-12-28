@@ -28,12 +28,9 @@ class TodoItem extends Component<TodoItemProps> {
 
         return (
             <View style={styles.itemContainer}>
-                <View style={styles.textContainer}>
-                    <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                        {todo.title}
-                    </Text>
-                    <Text style={styles.usernameText}>{todo.username}</Text>
-                </View>
+                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                    {todo.title}
+                </Text>
                 <View style={styles.buttonContainer}>
                     {!isDone ? (
                         <TodoButton title="Done" onPress={this.handleDone} />
@@ -44,7 +41,7 @@ class TodoItem extends Component<TodoItemProps> {
                             style={styles.doneButton}
                         />
                     )}
-                    <TodoButton title="Delete" onPress={this.handleDelete} />
+                    <TodoButton title="Delete" onPress={this.handleDelete} style={styles.deleteButton} />
                 </View>
             </View>
         );
@@ -58,16 +55,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         alignItems: "center",
     },
-    textContainer: {
-        flex: 1,
-    },
-    usernameText: {
-        marginTop: 5,
-        fontSize: 12,
-        color: "#888",
-    },
     itemText: {
         flex: 1,
+        marginRight: 6,
         fontSize: 16,
         color: "#000",
     },
@@ -79,6 +69,9 @@ const styles = StyleSheet.create({
     },
     doneButton: {
         backgroundColor: "gray",
+    },
+    deleteButton: {
+        marginLeft: 6,
     },
 });
 

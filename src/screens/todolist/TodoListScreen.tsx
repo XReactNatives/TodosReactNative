@@ -1,6 +1,6 @@
 //Todos列表组件
 import React, { Component } from "react";
-import { SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
+import { SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity ,Image} from "react-native";
 import { connect } from "react-redux";
 
 import { fetchTodosWithUsernamesAsync, toggleSection } from "../../store/todos/todosActions";
@@ -54,9 +54,13 @@ class TodoListScreen extends Component<TodoListProps> {
                                     keyExtractor={(item) => item.id.toString()}
                                     renderSectionHeader={({ section: { title, expanded } }) => (
                                         <TouchableOpacity onPress={() => this.props.toggleSection(title)}>
-                                            <Text style={styles.sectionHeader}>
-                                                {title} {expanded ? "▼" : "▲"}
-                                            </Text>
+                                            <View style={styles.sectionHeader}>
+                                                <Text style={styles.sectionTitle}>{title}</Text>
+                                                <Image
+                                                    source={expanded ? require('../../assets/icons/setion_header_down.png') : require('../../assets/icons/section_header_up.png')}
+                                                    style={styles.icon}
+                                                />
+                                            </View>
                                         </TouchableOpacity>
                                     )}
                                     renderItem={({ item, section }) =>
@@ -102,7 +106,7 @@ const styles = StyleSheet.create({
     },
     addButton: {
         alignSelf: 'center',
-        marginBottom: 20,
+        marginTop: 16,
         width: '100%',
     },
     errorText: {
@@ -110,8 +114,19 @@ const styles = StyleSheet.create({
         color: 'red',
     },
     sectionHeader: {
-        padding: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         backgroundColor: '#f4f4f4',
+    },
+    sectionTitle: {
         fontWeight: 'bold',
+        fontSize: 18,
+        paddingTop: 10,
+        paddingBottom: 10,
+    },
+    icon: {
+        width: 20,
+        height: 20,
     },
 });
