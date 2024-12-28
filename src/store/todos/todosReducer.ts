@@ -42,14 +42,17 @@ const todosReducer = (state = initialState, action: TodoAction) => {
                 loading: false,
                 error: action.payload as string,
             };
-        case ADD_TODO:                                          //纯函数：当前动作
-            return {                                            //新状态
+        case ADD_TODO:
+            const sectionExists = state.sections.some(section => section.title === action.payload.username);
+            return {
                 ...state,
-                sections: state.sections.map(section =>
-                    section.title === action.payload.username
-                        ? { ...section, data: [...section.data, action.payload] }
-                        : section
-                ),
+                sections: sectionExists
+                    ? state.sections.map(section =>
+                        section.title === action.payload.username
+                            ? { ...section, data: [...section.data, action.payload] }
+                            : section
+                    )
+                    : [...state.sections, { title: action.payload.username, data: [action.payload], expanded: true }],
             };
         case DELETE_TODO:
             return {

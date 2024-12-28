@@ -18,8 +18,8 @@ const AddTodoScreen: React.FC<AddTodoProps> = ({navigation}) => {
     const dispatch: AppDispatch = useDispatch();
 
     //Tip：局部状态，AddTodo组件内部输入框状态，使用useState保存
-    const [title, setTitle] = useState("");
     const [username, setUsername] = useState("");
+    const [title, setTitle] = useState("");
 
     //Tip：函数式组件，useTheme获取主题全局状态
     const theme = useTheme();
@@ -30,7 +30,7 @@ const AddTodoScreen: React.FC<AddTodoProps> = ({navigation}) => {
      */
     const handleAddTodo = () => {
         const id = Date.now();
-        dispatch(addTodo({id, title, completed: false, username}));
+        dispatch(addTodo({id, username, title, completed: false}));
         navigation.goBack();
     };
 
@@ -40,16 +40,16 @@ const AddTodoScreen: React.FC<AddTodoProps> = ({navigation}) => {
                 Add Todo
             </Text>
             <TextInput
-                placeholder="Todo Title"
-                value={title}
-                onChangeText={setTitle}
-                style={styles.titleInput}
-            />
-            <TextInput
                 placeholder="Username"
                 value={username}
                 onChangeText={setUsername}
                 style={styles.usernameInput}
+            />
+            <TextInput
+                placeholder="Todo Title"
+                value={title}
+                onChangeText={setTitle}
+                style={styles.titleInput}
             />
             <TodoButton title="Add Todo" onPress={handleAddTodo}/>
         </View>

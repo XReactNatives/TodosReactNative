@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
     },
     strikeThrough: {
         textDecorationLine: "line-through",
+        color: "gray",
     },
     buttonContainer: {
         flexDirection: "row",
