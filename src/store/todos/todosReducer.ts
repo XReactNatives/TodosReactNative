@@ -8,8 +8,8 @@ import {
     MARK_TODO_AS_DONE,
     TOGGLE_SECTION,
 } from "./todosTypes";
-import type { TodoWithUsername, Section } from "../../types/ui";
-import type { TodoAction } from "./todosTypes";
+import type {TodoWithUsername, Section} from "../../types/ui";
+import type {TodoAction} from "./todosTypes";
 
 //Tips：复杂的全局状态管理-redux实现，Todo应用全局状态todos，使用react-redux全局保存
 const initialState = {
@@ -43,16 +43,17 @@ const todosReducer = (state = initialState, action: TodoAction) => {
                 error: action.payload as string,
             };
         case ADD_TODO:
-            const sectionExists = state.sections.some(section => section.title === action.payload.username);
+            const newPayload = action.payload as TodoWithUsername; // 这里确保正确的 payload 类型
+            const sectionExists = state.sections.some(section => section.title === newPayload.username);
             return {
                 ...state,
                 sections: sectionExists
                     ? state.sections.map(section =>
-                        section.title === action.payload.username
-                            ? { ...section, data: [...section.data, action.payload] }
+                        section.title === newPayload.username
+                            ? {...section, data: [...section.data, newPayload]}
                             : section
                     )
-                    : [...state.sections, { title: action.payload.username, data: [action.payload], expanded: true }],
+                    : [...state.sections, {title: newPayload.username, data: [newPayload], expanded: true}],
             };
         case DELETE_TODO:
             return {
@@ -70,7 +71,7 @@ const todosReducer = (state = initialState, action: TodoAction) => {
                 sections: state.sections.map(section => ({
                     ...section,
                     data: section.data.map(todo =>
-                        todo.id === action.payload ? { ...todo, completed: true } : todo
+                        todo.id === action.payload ? {...todo, completed: true} : todo
                     ),
                 })),
             };
@@ -79,7 +80,7 @@ const todosReducer = (state = initialState, action: TodoAction) => {
                 ...state,
                 sections: state.sections.map(section =>
                     section.title === action.payload
-                        ? { ...section, expanded: !section.expanded }
+                        ? {...section, expanded: !section.expanded}
                         : section
                 ),
             };

@@ -6,42 +6,49 @@ import {
     FETCH_TODOS_FAILURE,
     MARK_TODO_AS_DONE,
     TOGGLE_SECTION,
+    AddTodoAction,
+    DeleteTodoAction,
+    MarkTodoAsDoneAction,
+    ToggleSectionAction,
+    FetchTodosRequestAction,
+    FetchTodosSuccessAction, FetchTodosFailureAction,
 } from "./todosTypes";
 import {fetchTodosFromAPI} from "../../services/todosService";
 import {fetchUsersFromAPI} from "../../services/usersService";
 import type {TodoWithUsername, Section} from "../../types/ui";
 import type {AppDispatch} from "../rootReducer";
 
-export const addTodo = (todo: TodoWithUsername) => ({
+export const addTodo = (todoWithUsername: TodoWithUsername): AddTodoAction => ({
     type: ADD_TODO,
-    payload: todo,
+    payload: todoWithUsername,
 });
 
-export const deleteTodo = (id: number) => ({
+
+export const deleteTodo = (id: number): DeleteTodoAction => ({
     type: DELETE_TODO,
     payload: id,
 });
 
-export const markTodoAsDone = (id: number) => ({
+export const markTodoAsDone = (id: number): MarkTodoAsDoneAction => ({
     type: MARK_TODO_AS_DONE,
     payload: id,
 });
 
-export const toggleSection = (title: string) => ({
+export const toggleSection = (title: string): ToggleSectionAction => ({
     type: TOGGLE_SECTION,
     payload: title,
 });
 
-export const fetchTodosRequest = () => ({
+export const fetchTodosRequest = (): FetchTodosRequestAction => ({
     type: FETCH_TODOS_REQUEST,
 });
 
-export const fetchTodosSuccess = (sections: Section[]) => ({
+export const fetchTodosSuccess = (sections: Section[]): FetchTodosSuccessAction => ({
     type: FETCH_TODOS_SUCCESS,
     payload: sections,
 });
 
-export const fetchTodosFailure = (error: string) => ({
+export const fetchTodosFailure = (error: string): FetchTodosFailureAction => ({
     type: FETCH_TODOS_FAILURE,
     payload: error,
 });
