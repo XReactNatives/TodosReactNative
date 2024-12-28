@@ -57,10 +57,12 @@ const todosReducer = (state = initialState, action: TodoAction) => {
         case DELETE_TODO:
             return {
                 ...state,
-                sections: state.sections.map(section => ({
-                    ...section,
-                    data: section.data.filter(todo => todo.id !== action.payload),
-                })),
+                sections: state.sections
+                    .map(section => ({
+                        ...section,
+                        data: section.data.filter(todo => todo.id !== action.payload),
+                    }))
+                    .filter(section => section.data.length > 0), // 删除空的section
             };
         case MARK_TODO_AS_DONE:
             return {
