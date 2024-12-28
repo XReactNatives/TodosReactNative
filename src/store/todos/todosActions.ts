@@ -7,10 +7,10 @@ import {
     MARK_TODO_AS_DONE,
     TOGGLE_SECTION,
 } from "./todosTypes";
-import { fetchTodosFromAPI } from "../../services/todosService";
-import { fetchUsersFromAPI } from "../../services/usersService";
-import type { TodoWithUsername, Section } from "../../types/ui";
-import type { AppDispatch } from "../rootReducer";
+import {fetchTodosFromAPI} from "../../services/todosService";
+import {fetchUsersFromAPI} from "../../services/usersService";
+import type {TodoWithUsername, Section} from "../../types/ui";
+import type {AppDispatch} from "../rootReducer";
 
 export const addTodo = (todo: TodoWithUsername) => ({
     type: ADD_TODO,
@@ -59,7 +59,7 @@ export const fetchTodosWithUsernamesAsync = () => async (dispatch: AppDispatch) 
             if (!acc[username]) {
                 acc[username] = [];
             }
-            acc[username].push({ ...todo, username });
+            acc[username].push({...todo, username});
             return acc;
         }, {} as Record<string, TodoWithUsername[]>);
 
@@ -71,7 +71,11 @@ export const fetchTodosWithUsernamesAsync = () => async (dispatch: AppDispatch) 
 
         dispatch(fetchTodosSuccess(sections));
     } catch (error) {
-        dispatch(fetchTodosFailure(error.message));
+        if (error instanceof Error) {
+            dispatch(fetchTodosFailure(error.message));
+        } else {
+            dispatch(fetchTodosFailure("Unknown error occurred"));
+        }
     }
 };
 
