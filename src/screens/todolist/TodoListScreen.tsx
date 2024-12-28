@@ -1,31 +1,31 @@
 //Todos列表组件
-import React, { Component } from "react";
-import { SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity ,Image} from "react-native";
-import { connect } from "react-redux";
+import React, {Component} from "react";
+import {SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image} from "react-native";
+import {connect} from "react-redux";
 
-import { fetchTodosWithUsernamesAsync, toggleSection } from "../../store/todos/todosActions";
+import {fetchTodosWithUsernamesAsync, toggleSection} from "../../store/todos/todosActions";
 import TodoItem from "./TodoItem";
 import TodoButton from "../../components/TodoButton";
-import type { NavigationProp } from "@react-navigation/native";
-import { styles as commonStyles } from "../../styles/styles";
-import { RouteConfig } from "../../config/routeConfig";
-import type { AppDispatch } from "../../store/rootReducer";
-import type { Section } from "../../store/todos/todosReducer";
-import { ThemeConsumer } from "../../context/ThemeProvider";
-import { selectSections, selectLoading, selectError } from "../../store/todos/todosSelectors";
+import type {NavigationProp} from "@react-navigation/native";
+import {styles as commonStyles} from "../../styles/styles";
+import {RouteConfig} from "../../config/routeConfig";
+import type {AppDispatch, RootState} from "../../store/rootReducer";
+import {ThemeConsumer} from "../../context/ThemeProvider";
+import {selectSections, selectLoading, selectError} from "../../store/todos/todosSelectors";
+import {Section} from "../../types/ui";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
     sections: Section[];
     loading: boolean;
     error: string | null;
-    fetchTodos: () => void;
+    fetchTodosWithUsernamesAsync: () => void;
     toggleSection: (title: string) => void;
 }
 
 class TodoListScreen extends Component<TodoListProps> {
     componentDidMount() {
-        this.props.fetchTodos();
+        this.props.fetchTodosWithUsernamesAsync();
     }
 
     handleAddTodo = () => {
@@ -33,26 +33,26 @@ class TodoListScreen extends Component<TodoListProps> {
     };
 
     render() {
-        const { sections, loading, error } = this.props;
+        const {sections, loading, error} = this.props;
 
         //Tip：类组件，ThemeConsumer获取主题全局状态
         return (
             <ThemeConsumer>
-                {({ titleColor }) => (
+                {({titleColor}) => (
                     <View style={commonStyles.container}>
-                        <Text style={[{ color: titleColor }, commonStyles.title]}>
+                        <Text style={[{color: titleColor}, commonStyles.title]}>
                             Todo List
                         </Text>
                         <View style={styles.listContainer}>
                             {loading ? (
-                                <ActivityIndicator size="large" color="#0000ff" />
+                                <ActivityIndicator size="large" color="#0000ff"/>
                             ) : error ? (
                                 <Text style={styles.errorText}>Error: {error}</Text>
                             ) : (
                                 <SectionList
                                     sections={sections}
                                     keyExtractor={(item) => item.id.toString()}
-                                    renderSectionHeader={({ section: { title, expanded } }) => (
+                                    renderSectionHeader={({section: {title, expanded}}) => (
                                         <TouchableOpacity onPress={() => this.props.toggleSection(title)}>
                                             <View style={styles.sectionHeader}>
                                                 <Text style={styles.sectionTitle}>{title}</Text>
@@ -63,8 +63,8 @@ class TodoListScreen extends Component<TodoListProps> {
                                             </View>
                                         </TouchableOpacity>
                                     )}
-                                    renderItem={({ item, section }) =>
-                                        section.expanded ? <TodoItem todo={item} /> : null
+                                    renderItem={({item, section}) =>
+                                        section.expanded ? <TodoItem todo={item}/> : null
                                     }
                                     style={styles.flatList}
                                 />
@@ -82,14 +82,14 @@ class TodoListScreen extends Component<TodoListProps> {
     }
 }
 
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state: RootState) => ({
     sections: selectSections(state),
     loading: selectLoading(state),
     error: selectError(state),
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-    fetchTodos: () => dispatch(fetchTodosWithUsernamesAsync()),
+    fetchTodosWithUsernamesAsync: () => dispatch(fetchTodosWithUsernamesAsync()),
     toggleSection: (title: string) => dispatch(toggleSection(title)),
 });
 
