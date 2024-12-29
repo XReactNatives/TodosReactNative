@@ -13,10 +13,9 @@ import {
     FetchTodosRequestAction,
     FetchTodosSuccessAction, FetchTodosFailureAction,
 } from "./todosTypes";
-import {fetchTodosFromAPI} from "../../services/todosService";
-import {fetchUsersFromAPI} from "../../services/usersService";
-import type {TodoWithUsername, Section} from "../../types/ui";
-import type {AppDispatch} from "../rootReducer";
+import { getTodosWithSections } from "../../domain/todoDomain.ts";
+import type { AppDispatch } from "../rootReducer";
+import {Section} from "../../types/ui";
 
 export const addTodo = (todoWithUsername: TodoWithUsername): AddTodoAction => ({
     type: ADD_TODO,
@@ -57,25 +56,7 @@ export const fetchTodosFailure = (error: string): FetchTodosFailureAction => ({
 export const fetchTodosWithUsernamesAsync = () => async (dispatch: AppDispatch) => {
     dispatch(fetchTodosRequest());
     try {
-        const todos = await fetchTodosFromAPI();
-        const users = await fetchUsersFromAPI();
-
-        const grouped = todos.reduce((acc, todo) => {
-            const user = users.find(user => user.id === todo.userId);
-            const username = user ? user.username : "Unknown";
-            if (!acc[username]) {
-                acc[username] = [];
-            }
-            acc[username].push({...todo, username});
-            return acc;
-        }, {} as Record<string, TodoWithUsername[]>);
-
-        const sections = Object.keys(grouped).map(username => ({
-            title: username,
-            data: grouped[username],
-            expanded: true, // 默认展开
-        }));
-
+        const sections = await getTodosWithSections();
         dispatch(fetchTodosSuccess(sections));
     } catch (error) {
         if (error instanceof Error) {
