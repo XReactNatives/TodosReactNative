@@ -18,24 +18,3 @@ export const fetchTodosFromAPI = async (): Promise<Todo[]> => {
     const data: Todo[] = await response.json();
     return data;
 };
-
-// export const fetchTodosWithSections = async (): Promise<Section[]> => {
-//     const todos = await fetchTodosFromAPI();
-//     const users = await fetchUsersFromAPI();
-//
-//     const grouped = todos.reduce((acc, todo) => {
-//         const user = users.find(user => user.id === todo.userId);
-//         const username = user ? user.username : "Unknown";
-//         if (!acc[username]) {
-//             acc[username] = [];
-//         }
-//         acc[username].push({ ...todo, username });
-//         return acc;
-//     }, {} as Record<string, TodoWithUsername[]>);
-//
-//     return Object.keys(grouped).map(username => ({
-//         title: username,
-//         data: grouped[username],
-//         expanded: true,
-//     }));
-// };

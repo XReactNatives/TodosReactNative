@@ -3,15 +3,15 @@ import React, {Component} from "react";
 import {SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image} from "react-native";
 import {connect} from "react-redux";
 
-import {fetchTodosWithUsernamesAsync, toggleSection} from "../../store/todos/todosActions";
-import TodoItem from "./TodoItem";
-import TodoButton from "../../components/TodoButton";
+import {fetchTodosWithUsernamesAsync, toggleSection} from "../../store/todos/todosActions.ts";
+import TodoItem from "./TodoItem.tsx";
+import TodoButton from "../components/TodoButton.tsx";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles";
-import {RouteConfig} from "../../config/routeConfig";
-import type {AppDispatch, RootState} from "../../store/rootReducer";
-import {ThemeConsumer} from "../../context/ThemeProvider";
-import {selectSections, selectLoading, selectError} from "../../store/todos/todosSelectors";
+import {styles as commonStyles} from "../../styles/styles.ts";
+import {RouteConfig} from "../../config/routeConfig.ts";
+import type {AppDispatch, RootState} from "../../store/rootReducer.ts";
+import {ThemeConsumer} from "../../context/ThemeProvider.tsx";
+import {selectSections, selectLoading, selectError} from "../../store/todos/todosSelectors.ts";
 import {Section} from "../../types/ui";
 
 interface TodoListProps {
@@ -23,7 +23,7 @@ interface TodoListProps {
     toggleSection: (title: string) => void;
 }
 
-class TodoListScreen extends Component<TodoListProps> {
+class TodoListContainer extends Component<TodoListProps> {
     componentDidMount() {
         this.props.fetchTodosWithUsernamesAsync();
     }
@@ -93,7 +93,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     toggleSection: (title: string) => dispatch(toggleSection(title)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(TodoListScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(TodoListContainer);
 
 // Styles
 const styles = StyleSheet.create({

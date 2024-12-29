@@ -3,18 +3,18 @@ import React, {useState} from "react";
 import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
 
-import {addTodo} from "../../store/todos/todosActions";
+import {addTodo} from "../../store/todos/todosActions.ts";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles";
-import type {AppDispatch} from "../../store/rootReducer";
-import TodoButton from "../../components/TodoButton";
-import {useTheme} from "../../context/ThemeProvider";
+import {styles as commonStyles} from "../../styles/styles.ts";
+import type {AppDispatch} from "../../store/rootReducer.ts";
+import TodoButton from "../components/TodoButton.tsx";
+import {useTheme} from "../../context/ThemeProvider.tsx";
 
 interface AddTodoProps {
     navigation: NavigationProp<any>;
 }
 
-const AddTodoScreen: React.FC<AddTodoProps> = ({navigation}) => {
+const AddTodoContainer: React.FC<AddTodoProps> = ({navigation}) => {
     const dispatch: AppDispatch = useDispatch();
 
     //Tip：局部状态，AddTodo组件内部输入框状态，使用useState保存
@@ -62,4 +62,4 @@ const styles = StyleSheet.create({
     usernameInput: {borderBottomWidth: 1, marginBottom: 20},
 });
 
-export default AddTodoScreen;
+export default AddTodoContainer;
