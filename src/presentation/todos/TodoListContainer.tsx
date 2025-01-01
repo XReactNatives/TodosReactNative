@@ -5,7 +5,7 @@ import {connect} from "react-redux";
 
 import {fetchTodosWithUsernamesAsync, toggleSection} from "../../store/todos/todosActions.ts";
 import TodoItem from "./TodoItem.tsx";
-import TodoButton from "../components/TodoButton.tsx";
+import TodoButton from "../component/TodoButton.tsx";
 import type {NavigationProp} from "@react-navigation/native";
 import {styles as commonStyles} from "../../styles/styles.ts";
 import {RouteConfig} from "../../config/routeConfig.ts";

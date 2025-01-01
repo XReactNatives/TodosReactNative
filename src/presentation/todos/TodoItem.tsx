@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 
 import { deleteTodo, markTodoAsDone } from "../../store/todos/todosActions.ts";
 import type { TodoWithUsername } from "../../types/ui";
-import TodoButton from "../components/TodoButton.tsx";
+import TodoButton from "../component/TodoButton.tsx";
 
 interface TodoItemProps {
     todo: TodoWithUsername;

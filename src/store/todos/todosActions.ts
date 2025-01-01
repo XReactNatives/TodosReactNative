@@ -13,7 +13,7 @@ import {
     FetchTodosRequestAction,
     FetchTodosSuccessAction, FetchTodosFailureAction,
 } from "./todosTypes";
-import { getTodosWithSections } from "../../domain/todoDomain.ts";
+import { getTodosWithSections } from "../../domain/todosUseCase";
 import type { AppDispatch } from "../rootReducer";
 import {Section} from "../../types/ui";
 
