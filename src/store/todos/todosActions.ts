@@ -15,7 +15,7 @@ import {
 } from "./todosTypes";
 import { getTodosWithSections } from "../../domain/todosUseCase";
 import type { AppDispatch } from "../rootReducer";
-import {Section} from "../../types/ui";
+import {Section, TodoWithUsername} from "../../types/ui";
 
 export const addTodo = (todoWithUsername: TodoWithUsername): AddTodoAction => ({
     type: ADD_TODO,
