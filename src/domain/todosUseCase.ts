@@ -7,8 +7,8 @@ export const getTodosWithSections = async (): Promise<Section[]> => {
     const users = await fetchUsersFromAPI();
 
     const grouped = todos.reduce((acc, todo) => {
-        const user = users.find(user => user.id === todo.userId);
-        const username = user ? user.username : "Unknown";
+        const findUser = users.find(user => Number(user.id) === todo.userId);
+        const username = findUser ? findUser.username : "Unknown";
         if (!acc[username]) {
             acc[username] = [];
         }
@@ -21,4 +21,4 @@ export const getTodosWithSections = async (): Promise<Section[]> => {
         data: grouped[username],
         expanded: true,
     }));
-}; 
+};
