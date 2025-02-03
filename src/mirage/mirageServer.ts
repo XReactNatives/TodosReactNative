@@ -1,9 +1,9 @@
-import {createServer, Model} from 'miragejs';
+import {createServer, Model, Response} from 'miragejs';
 
 import {apiConfig} from '../config/apiConfig';
 
-const todosApiUrl = `${apiConfig.baseURL}/todos`;
-const usersApiUrl = `${apiConfig.baseURL}/users`;
+const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
+const usersApiUrl = `${apiConfig.getConfigByEnv.baseURL}/users`;
 
 export function makeServer({environment = 'development'} = {}) {
   return createServer({
@@ -15,6 +15,7 @@ export function makeServer({environment = 'development'} = {}) {
     },
 
     seeds(server) {
+      //FIXME id为什么总是默认是string类型？？
       server.create('todo', {
         userId: 1,
         id: 1,
@@ -52,14 +53,42 @@ export function makeServer({environment = 'development'} = {}) {
 
     routes() {
       this.namespace = '';
+      // this.timing = 10000;//全局延时
 
-      this.get(todosApiUrl, schema => {
-        return schema.todos.all().models;
+      //成功返回
+      // this.get(todosApiUrl, schema => {
+      //   return schema.todos.all().models; //默认会返回200和数据
+      // });
+
+      //失败返回
+      // this.get(todosApiUrl, _ => {
+      //   return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
+      // });
+
+      //单独延时返回
+      this.get(
+        todosApiUrl,
+        schema => {
+          return schema.todos.all().models;
+        },
+        {timing: 4000},
+      );
+
+      // this.get(usersApiUrl, schema => {
+      //   return schema.users.all().models;
+      // });
+
+      this.get(usersApiUrl, _ => {
+        return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
       });
 
-      this.get(usersApiUrl, schema => {
-        return schema.users.all().models;
-      });
+      this.get(
+        usersApiUrl,
+        schema => {
+          return schema.users.all().models;
+        },
+        {timing: 4000},
+      );
     },
   });
 }

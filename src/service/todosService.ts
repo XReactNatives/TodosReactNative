@@ -2,7 +2,7 @@
 import { apiConfig } from "../config/apiConfig";
 import type { Todo } from "../types/api";
 
-const todosApiUrl = `${apiConfig.baseURL}/todos`;
+const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
 
 export const fetchTodosFromAPI = async (): Promise<Todo[]> => {
     const response = await fetch(todosApiUrl, {
