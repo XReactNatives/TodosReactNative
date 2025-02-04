@@ -22,14 +22,20 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName={RouteConfig.TODO_LIST}>
-          <Stack.Screen name={RouteConfig.TODO_LIST} component={TodoList} />
+          <Stack.Screen
+            name={RouteConfig.TODO_LIST}
+            component={TodoList}
+            options={{headerShown: false}}
+          />
           <Stack.Screen
             name={RouteConfig.ADD_TODO}
             component={AddTodoContainer}
+            options={{headerShown: false}}
           />
           <Stack.Screen
             name={RouteConfig.COUNTER}
             component={CounterContainer}
+            options={{headerShown: false}}
           />
         </Stack.Navigator>
       </NavigationContainer>
