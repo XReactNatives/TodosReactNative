@@ -1,6 +1,6 @@
 import {createServer, Model, Response} from 'miragejs';
 
-import {apiConfig} from '../config/apiConfig';
+import {apiConfig} from '../configs/apiConfig';
 
 const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
 const usersApiUrl = `${apiConfig.getConfigByEnv.baseURL}/users`;

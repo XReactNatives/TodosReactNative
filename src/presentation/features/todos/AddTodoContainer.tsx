@@ -3,12 +3,12 @@ import React, {useState} from "react";
 import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
 
-import {addTodo} from "../../state/store/todos/todosActions.ts";
+import {addTodo} from "../../../state/store/todos/todosActions.ts";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles.ts";
-import type {AppDispatch} from "../../state/store/rootReducer.ts";
-import TodoButton from "../component/TodoButton.tsx";
-import {useTheme} from "../../state/context/ThemeProvider.tsx";
+import {styles as commonStyles} from "../../../styles/styles.ts";
+import type {AppDispatch} from "../../../state/store/rootReducer.ts";
+import TodoButton from "../../components/TodoButton.tsx";
+import {useTheme} from "../../../state/context/ThemeProvider.tsx";
 
 interface AddTodoProps {
     navigation: NavigationProp<any>;

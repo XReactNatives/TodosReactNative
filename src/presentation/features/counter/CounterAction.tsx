@@ -6,7 +6,7 @@ import {
     increment,
     decrement,
     incrementByAmount,
-} from "../../state/store/counter/counterSlice.ts";
+} from "../../../state/store/counter/counterSlice.ts";
 
 const CounterAction: React.FC = () => {
     const dispatch = useDispatch();

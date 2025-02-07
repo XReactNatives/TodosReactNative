@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import { View, Text, Button } from "react-native";
 
-import { styles as commonStyles } from "../../styles/styles.ts";
+import { styles as commonStyles } from "../../../styles/styles.ts";
 
 const initialState = { count: 0 };
 

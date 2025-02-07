@@ -3,16 +3,16 @@ import React, {Component} from "react";
 import {SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image} from "react-native";
 import {connect} from "react-redux";
 
-import {fetchTodosWithUsernamesAsync, toggleSection} from "../../state/store/todos/todosActions.ts";
+import {fetchTodosWithUsernamesAsync, toggleSection} from "../../../state/store/todos/todosActions.ts";
 import TodoItem from "./TodoItem.tsx";
-import TodoButton from "../component/TodoButton.tsx";
+import TodoButton from "../../components/TodoButton.tsx";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles.ts";
-import {RouteConfig} from "../../config/routeConfig.ts";
-import type {AppDispatch, RootState} from "../../state/store/rootReducer.ts";
-import {ThemeConsumer} from "../../state/context/ThemeProvider.tsx";
-import {selectSections, selectLoading, selectError} from "../../state/store/todos/todosSelectors.ts";
-import {Section} from "../../types/ui";
+import {styles as commonStyles} from "../../../styles/styles.ts";
+import {RouteConfig} from "../../../configs/routeConfig.ts";
+import type {AppDispatch, RootState} from "../../../state/store/rootReducer.ts";
+import {ThemeConsumer} from "../../../state/context/ThemeProvider.tsx";
+import {selectSections, selectLoading, selectError} from "../../../state/store/todos/todosSelectors.ts";
+import {Section} from "../../../types/ui";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
@@ -57,7 +57,7 @@ class TodoListContainer extends Component<TodoListProps> {
                                             <View style={styles.sectionHeader}>
                                                 <Text style={styles.sectionTitle}>{title}</Text>
                                                 <Image
-                                                    source={expanded ? require('../../assets/icons/setion_header_down.png') : require('../../assets/icons/section_header_up.png')}
+                                                    source={expanded ? require('../../../assets/icons/setion_header_down.png') : require('../../../assets/icons/section_header_up.png')}
                                                     style={styles.icon}
                                                 />
                                             </View>
