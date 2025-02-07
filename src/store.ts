@@ -1,6 +1,6 @@
 // Redux Store 配置
 import {configureStore} from "@reduxjs/toolkit";
-import rootReducer from "./store/rootReducer";
+import rootReducer from "./state/store/rootReducer";
 import logger from 'redux-logger';
 
 const store = configureStore({

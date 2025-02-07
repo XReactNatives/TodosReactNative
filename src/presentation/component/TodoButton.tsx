@@ -4,7 +4,7 @@ import React, { Component } from "react";
 import { TouchableOpacity, Text } from "react-native";
 
 import { styles as commonStyles } from "../../styles/styles.ts";
-import { ThemeConsumer } from "../../context/ThemeProvider.tsx";
+import { ThemeConsumer } from "../../state/context/ThemeProvider.tsx";
 
 /**
  * Tip：推荐始终使用接口或类型别名来定义 Props，而不再依赖 PropTypes。

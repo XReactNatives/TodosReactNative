@@ -1,4 +1,4 @@
-import type {Section, TodoWithUsername} from "../../types/ui";
+import type {Section, TodoWithUsername} from "../../../types/ui";
 
 export const ADD_TODO = "ADD_TODO";
 export const DELETE_TODO = "DELETE_TODO";

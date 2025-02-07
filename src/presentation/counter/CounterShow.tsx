@@ -2,8 +2,8 @@ import React from "react";
 import { Text, View } from "react-native";
 import { useSelector } from "react-redux";
 
-import { selectCount } from "../../store/counter/counterSlice.ts";
-import { RootState } from "../../store/rootReducer.ts";
+import { selectCount } from "../../state/store/counter/counterSlice.ts";
+import { RootState } from "../../state/store/rootReducer.ts";
 import { styles as commonStyles } from "../../styles/styles.ts";
 
 /**

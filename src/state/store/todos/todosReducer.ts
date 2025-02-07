@@ -7,9 +7,9 @@ import {
     FETCH_TODOS_FAILURE,
     MARK_TODO_AS_DONE,
     TOGGLE_SECTION,
-} from "./todosTypes";
-import type {TodoWithUsername, Section} from "../../types/ui";
-import type {TodoAction} from "./todosTypes";
+} from "./todosTypes.ts";
+import type {TodoWithUsername, Section} from "../../../types/ui";
+import type {TodoAction} from "./todosTypes.ts";
 
 //Tips：复杂的全局状态管理-redux实现，Todo应用全局状态todos，使用react-redux全局保存
 const initialState = {

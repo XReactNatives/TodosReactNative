@@ -1,9 +1,9 @@
 //根 Reducer
 import { combineReducers } from "redux";
 
-import todosReducer from "./todos/todosReducer";
-import counterReducer from "./counter/counterSlice";
-import type store from "../store";
+import todosReducer from "./todos/todosReducer.ts";
+import counterReducer from "./counter/counterSlice.ts";
+import type store from "../../store.ts";
 
 /**
  * reduce 拆分融合

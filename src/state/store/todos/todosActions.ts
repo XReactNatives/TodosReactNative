@@ -12,10 +12,10 @@ import {
     ToggleSectionAction,
     FetchTodosRequestAction,
     FetchTodosSuccessAction, FetchTodosFailureAction,
-} from "./todosTypes";
-import { getTodosWithSections } from "../../domain/todosUseCase";
-import type { AppDispatch } from "../rootReducer";
-import {Section, TodoWithUsername} from "../../types/ui";
+} from "./todosTypes.ts";
+import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
+import type { AppDispatch } from "../rootReducer.ts";
+import {Section, TodoWithUsername} from "../../../types/ui";
 
 export const addTodo = (todoWithUsername: TodoWithUsername): AddTodoAction => ({
     type: ADD_TODO,

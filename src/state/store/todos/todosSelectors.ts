@@ -13,7 +13,7 @@
 //3.隔离状态结构变化：如果Redux状态结构发生变化，只需更新Selectors，而不需要更新所有使用该状态的组件。
 //4.提高性能：通过memoization，Selectors可以避免不必要的计算，尤其是在状态变化频繁的情况下。
 import { createSelector } from 'reselect';
-import type { RootState } from '../rootReducer';
+import type { RootState } from '../rootReducer.ts';
 
 // 基本选择器：获取todos状态
 const selectTodosState = (state: RootState) => state.todos;
@@ -34,4 +34,4 @@ export const selectLoading = createSelector(
 export const selectError = createSelector(
     [selectTodosState],
     (todosState) => todosState.error
-); 
+);
