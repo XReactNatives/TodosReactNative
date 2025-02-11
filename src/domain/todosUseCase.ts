@@ -1,6 +1,6 @@
 import {fetchTodosFromAPI} from "../service/todosService";
 import {fetchUsersFromAPI} from "../service/usersService";
-import type {Section, TodoWithUsername} from "../types/ui";
+import type {Section, TodoWithUsername} from "../type/ui";
 
 export const getTodosWithSections = async (): Promise<Section[]> => {
     const todos = await fetchTodosFromAPI();

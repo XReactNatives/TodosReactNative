@@ -1,6 +1,6 @@
 // Todos API 请求
 import { apiConfig } from "../configs/apiConfig";
-import type { Todo } from "../types/api";
+import type { Todo } from "../type/api";
 
 const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
 

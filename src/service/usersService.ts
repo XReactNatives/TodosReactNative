@@ -1,6 +1,6 @@
 // Users API 请求
 import { apiConfig } from "../configs/apiConfig";
-import type { User } from "../types/api";
+import type { User } from "../type/api";
 
 const usersApiUrl = `${apiConfig.getConfigByEnv.baseURL}/users`;
 

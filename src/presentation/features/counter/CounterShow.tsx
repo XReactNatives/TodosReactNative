@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 import { selectCount } from "../../../state/store/counter/counterSlice.ts";
 import { RootState } from "../../../state/store/rootReducer.ts";
-import { styles as commonStyles } from "../../../styles/styles.ts";
+import { styles as commonStyles } from "../../styles/styles.ts";
 
 /**
  * Tip：建议多行注释样例

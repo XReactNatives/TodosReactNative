@@ -5,7 +5,7 @@ import {useDispatch} from "react-redux";
 
 import {addTodo} from "../../../state/store/todos/todosActions.ts";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../../styles/styles.ts";
+import {styles as commonStyles} from "../../styles/styles.ts";
 import type {AppDispatch} from "../../../state/store/rootReducer.ts";
 import TodoButton from "../../components/TodoButton.tsx";
 import {useTheme} from "../../../state/context/ThemeProvider.tsx";

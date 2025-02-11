@@ -3,7 +3,7 @@
 import React, { Component } from "react";
 import { TouchableOpacity, Text } from "react-native";
 
-import { styles as commonStyles } from "../../styles/styles.ts";
+import { styles as commonStyles } from "../styles/styles.ts";
 import { ThemeConsumer } from "../../state/context/ThemeProvider.tsx";
 
 /**

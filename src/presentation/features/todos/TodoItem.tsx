@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 
 import { deleteTodo, markTodoAsDone } from "../../../state/store/todos/todosActions.ts";
-import type { TodoWithUsername } from "../../../types/ui";
+import type { TodoWithUsername } from "../../../type/ui";
 import TodoButton from "../../components/TodoButton.tsx";
 
 interface TodoItemProps {

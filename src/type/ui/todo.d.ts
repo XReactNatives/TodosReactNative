@@ -1,5 +1,3 @@
-// UI相关类型定义
-
 // UI展示用的类型，包含username
 export type TodoWithUsername = {
     id: number;
@@ -13,4 +11,4 @@ export interface Section {
     title: string;
     data: TodoWithUsername[];
     expanded: boolean;
-} 
+}

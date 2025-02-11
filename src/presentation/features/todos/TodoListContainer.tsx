@@ -7,12 +7,12 @@ import {fetchTodosWithUsernamesAsync, toggleSection} from "../../../state/store/
 import TodoItem from "./TodoItem.tsx";
 import TodoButton from "../../components/TodoButton.tsx";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../../styles/styles.ts";
+import {styles as commonStyles} from "../../styles/styles.ts";
 import {RouteConfig} from "../../../configs/routeConfig.ts";
 import type {AppDispatch, RootState} from "../../../state/store/rootReducer.ts";
 import {ThemeConsumer} from "../../../state/context/ThemeProvider.tsx";
 import {selectSections, selectLoading, selectError} from "../../../state/store/todos/todosSelectors.ts";
-import {Section} from "../../../types/ui";
+import {Section} from "../../../type/ui";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
