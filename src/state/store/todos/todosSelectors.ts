@@ -35,3 +35,22 @@ export const selectError = createSelector(
     [selectTodosState],
     (todosState) => todosState.error
 );
+
+// 新增选择器：根据过滤器获取sections
+export const selectFilteredSections = (state: RootState, filter: string) => {
+    const sections = selectSections(state);
+    switch (filter) {
+        case 'Done':
+            return sections.map(section => ({
+                ...section,
+                data: section.data.filter(todo => todo.completed),
+            }));
+        case 'UnDone':
+            return sections.map(section => ({
+                ...section,
+                data: section.data.filter(todo => !todo.completed),
+            }));
+        default:
+            return sections;
+    }
+};

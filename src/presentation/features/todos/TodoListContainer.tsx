@@ -11,19 +11,26 @@ import {styles as commonStyles} from "../../styles/styles.ts";
 import {RouteConfig} from "../../../configs/routeConfig.ts";
 import type {AppDispatch, RootState} from "../../../state/store/rootReducer.ts";
 import {ThemeConsumer} from "../../../state/context/ThemeProvider.tsx";
-import {selectSections, selectLoading, selectError} from "../../../state/store/todos/todosSelectors.ts";
+import {selectSections, selectLoading, selectError, selectFilteredSections} from "../../../state/store/todos/todosSelectors.ts";
 import {Section} from "../../../type/ui";
 
 interface TodoListProps {
     navigation: NavigationProp<any>;
-    sections: Section[];
     loading: boolean;
     error: string | null;
     fetchTodosWithUsernamesAsync: () => void;
     toggleSection: (title: string) => void;
+    filterSections: (filter: string) => Section[];
 }
 
-class TodoListContainer extends Component<TodoListProps> {
+class TodoListContainer extends Component<TodoListProps, { filter: string }> {
+    constructor(props: TodoListProps) {
+        super(props);
+        this.state = {
+            filter: 'All',
+        };
+    }
+
     componentDidMount() {
         this.props.fetchTodosWithUsernamesAsync();
     }
@@ -32,8 +39,14 @@ class TodoListContainer extends Component<TodoListProps> {
         this.props.navigation.navigate(RouteConfig.ADD_TODO);
     };
 
+    setFilter = (filter: string) => {
+        this.setState({ filter });
+    };
+
     render() {
-        const {sections, loading, error} = this.props;
+        const {loading, error, filterSections} = this.props;
+        const {filter} = this.state;
+        const filteredSections = filterSections(filter);
 
         //Tip：类组件，ThemeConsumer获取主题全局状态
         return (
@@ -43,6 +56,27 @@ class TodoListContainer extends Component<TodoListProps> {
                         <Text style={[{color: titleColor}, commonStyles.title]}>
                             Todo List
                         </Text>
+                        <View style={styles.filterContainer}>
+                            {['All', 'Done', 'UnDone'].map((type) => (
+                                <TouchableOpacity
+                                    key={type}
+                                    onPress={() => this.setFilter(type)}
+                                    style={[
+                                        styles.filterButton,
+                                        filter === type && {backgroundColor: titleColor},
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.filterButtonText,
+                                            filter === type && {color: 'white'},
+                                        ]}
+                                    >
+                                        {type}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
                         <View style={styles.listContainer}>
                             {loading ? (
                                 <ActivityIndicator size="large" color="#0000ff"/>
@@ -50,7 +84,7 @@ class TodoListContainer extends Component<TodoListProps> {
                                 <Text style={styles.errorText}>Error: {error}</Text>
                             ) : (
                                 <SectionList
-                                    sections={sections}
+                                    sections={filteredSections}
                                     keyExtractor={(item) => item.id.toString()}
                                     renderSectionHeader={({section: {title, expanded}}) => (
                                         <TouchableOpacity onPress={() => this.props.toggleSection(title)}>
@@ -86,6 +120,7 @@ const mapStateToProps = (state: RootState) => ({
     sections: selectSections(state),
     loading: selectLoading(state),
     error: selectError(state),
+    filterSections: (filter: string) => selectFilteredSections(state, filter),
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
@@ -128,5 +163,20 @@ const styles = StyleSheet.create({
     icon: {
         width: 20,
         height: 20,
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginVertical: 10,
+    },
+    filterButton: {
+        padding: 10,
+        borderRadius: 5,
+        width: 80,
+        alignItems: 'center',
+    },
+    filterButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
