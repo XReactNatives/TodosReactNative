@@ -14,6 +14,17 @@ import { selectLoading, selectError, selectFilteredSections } from "../../../sta
 
 type FilterType = "All" | "Done" | "UnDone";
 
+// Tips：展示层 - Container
+// 定义：连接 Redux 的 UI 容器组件，负责数据获取、状态订阅与事件分发。
+// 职责：
+// 1. 使用 hooks 读取 selector 数据（sections/loading/error）。
+// 2. dispatch Thunk 或同步 Action（如 fetch / toggleSection）。
+// 3. 将数据和回调传递给纯展示组件，控制导航。
+// 优势：
+// • UI 与状态管理解耦；
+// • 逻辑集中，易测试；
+// • 复用展示组件，保持视图纯粹。
+//
 const TodoListContainer: React.FC = () => {
     const navigation = useNavigation<NavigationProp<any>>();
     const dispatch = useAppDispatch();

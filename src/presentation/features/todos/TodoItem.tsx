@@ -10,6 +10,14 @@ interface TodoItemProps {
     todo: TodoWithUsername;
 }
 
+// Tips：展示层 - Component
+// 定义：纯展示组件，只接收 props，不直接访问 Redux。
+// 职责：
+// 1. 根据 props 渲染 UI（Todo 文本、按钮）。
+// 2. 触发由父组件传入或内部包装的回调（删除 / 完成）。
+// 优势：
+// • 无状态或仅本地 UI 状态，便于复用与单元测试；
+// • 关注视图与交互，实现简单。
 const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
     const dispatch = useAppDispatch();
     const isDone = todo.completed;
