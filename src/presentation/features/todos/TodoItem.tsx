@@ -26,9 +26,11 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
         dispatch(deleteTodo(todo.id));
     };
 
-    const handleDone = () => {
+    const handleToggleDone = () => {
         dispatch(markTodoAsDone(todo.id));
     };
+
+    const buttonTitle = isDone ? "Undo" : "Done";
 
     return (
         <View style={styles.itemContainer}>
@@ -37,8 +39,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
             </Text>
             <View style={styles.buttonContainer}>
                 <TodoButton
-                    title="Done"
-                    onPress={isDone ? () => {} : handleDone}
+                    title={buttonTitle}
+                    onPress={handleToggleDone}
                     style={isDone ? styles.doneButton : undefined}
                 />
                 <TodoButton title="Delete" onPress={handleDelete} style={styles.deleteButton} />

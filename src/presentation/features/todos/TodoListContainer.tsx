@@ -10,7 +10,7 @@ import TodoButton from "../../components/TodoButton.tsx";
 import { styles as commonStyles } from "../../styles/styles.ts";
 import { RouteConfig } from "../../../configs/routeConfig.ts";
 import { ThemeConsumer } from "../../../state/context/ThemeProvider.tsx";
-import { selectLoading, selectError, selectFilteredSections } from "../../../state/store/todos/todosSelectors.ts";
+import { selectLoading, selectError, selectFilteredSections,selectFilterCount } from "../../../state/store/todos/todosSelectors.ts";
 
 type FilterType = "All" | "Done" | "UnDone";
 
@@ -34,6 +34,9 @@ const TodoListContainer: React.FC = () => {
     const loading = useAppSelector(selectLoading);
     const error = useAppSelector(selectError);
     const sections = useAppSelector(state => selectFilteredSections(state, filter));
+
+    // 计数派生：仅获取当前过滤类型的数量
+    const currentCount = useAppSelector((s) => selectFilterCount(s, filter));
 
     useEffect(() => {
         dispatch(fetchTodosWithUsernamesAsync());
@@ -61,6 +64,9 @@ const TodoListContainer: React.FC = () => {
                                 >
                                     {type}
                                 </Text>
+                                {filter === type && (
+                                    <Text style={styles.countText}>{currentCount}</Text>
+                                )}
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -147,5 +153,9 @@ const styles = StyleSheet.create({
     filterButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    countText: {
+        fontSize: 12,
+        color: 'white',
     },
 });

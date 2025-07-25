@@ -42,16 +42,36 @@ export const selectFilteredSections = (state: RootState, filter: string) => {
     const sections = selectSections(state);
     switch (filter) {
         case 'Done':
-            return sections.map(section => ({
-                ...section,
-                data: section.data.filter(todo => todo.completed),
-            }));
+            return sections
+                .map(section => ({
+                    ...section,
+                    data: section.data.filter(todo => todo.completed),
+                }))
+                .filter(section => section.data.length > 0);
         case 'UnDone':
-            return sections.map(section => ({
-                ...section,
-                data: section.data.filter(todo => !todo.completed),
-            }));
+            return sections
+                .map(section => ({
+                    ...section,
+                    data: section.data.filter(todo => !todo.completed),
+                }))
+                .filter(section => section.data.length > 0);
         default:
             return sections;
+    }
+};
+
+export const selectFilterCount = (
+    state: RootState,
+    filter: "All" | "Done" | "UnDone"
+) => {
+    const sections = selectSections(state);
+    const list = sections.flatMap((sec) => sec.data);
+    switch (filter) {
+        case "Done":
+            return list.filter((t) => t.completed).length;
+        case "UnDone":
+            return list.filter((t) => !t.completed).length;
+        default:
+            return list.length;
     }
 };

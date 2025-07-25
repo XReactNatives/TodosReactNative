@@ -58,7 +58,7 @@ const todosSlice = createSlice({
             state.sections = state.sections.map((section) => ({
                 ...section,
                 data: section.data.map((todo) =>
-                    todo.id === payload ? { ...todo, completed: true } : todo
+                    todo.id === payload ? { ...todo, completed: !todo.completed } : todo
                 ),
             }));
         },
