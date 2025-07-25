@@ -4,6 +4,8 @@ import {NavigationContainer} from "@react-navigation/native";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {Provider} from "react-redux";
 import store from "./store"; // 导入存储
+
+
 import TodoList from "./presentation/features/todos/TodoListContainer.tsx";
 import AddTodoContainer from "./presentation/features/todos/AddTodoContainer.tsx";
 import {RouteConfig} from "./configs/routeConfig";
@@ -17,6 +19,14 @@ if (process.env.NODE_ENV === "development") {
 
 const Stack = createNativeStackNavigator();
 
+// Tips：展示层-Provider
+// 定义：React-Redux 提供的顶层组件，用于把 Redux store 注入 React 组件树。
+// 职责：
+// 1. 将 store 放入 React Context，供子组件的 useSelector / useDispatch 读取。
+// 2. 保证整个应用共享唯一状态源。
+// 优势：
+// • 无需手动传递 props，即可在任意深度组件访问全局状态；
+// • 只渲染一次，性能开销可忽略。
 export default function App() {
   return (
     <Provider store={store}>

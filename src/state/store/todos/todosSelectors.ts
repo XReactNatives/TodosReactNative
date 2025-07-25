@@ -1,4 +1,7 @@
-//Tips：Selectors
+import { createSelector } from 'reselect';
+import type { RootState } from '../rootReducer.ts';
+
+//Tips：状态层-Selectors
 //定义：
 //1.用于从Redux store中提取数据的函数。它们提供了一种从Redux状态中获取数据的抽象层，通常用于提高代码的可读性和可维护性。
 //2.可以是简单的函数，也可以是使用reselect库创建的memoized selectors。
@@ -12,8 +15,6 @@
 //2.易于测试：Selectors是纯函数，易于单独测试。
 //3.隔离状态结构变化：如果Redux状态结构发生变化，只需更新Selectors，而不需要更新所有使用该状态的组件。
 //4.提高性能：通过memoization，Selectors可以避免不必要的计算，尤其是在状态变化频繁的情况下。
-import { createSelector } from 'reselect';
-import type { RootState } from '../rootReducer.ts';
 
 // 基本选择器：获取todos状态
 const selectTodosState = (state: RootState) => state.todos;

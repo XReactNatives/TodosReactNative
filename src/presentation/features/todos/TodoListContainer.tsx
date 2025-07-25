@@ -1,134 +1,92 @@
 //Todos列表组件
-import React, {Component} from "react";
+import React, { useEffect, useState } from "react";
 import {SectionList, View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image} from "react-native";
-import {connect} from "react-redux";
-
-import {fetchTodosWithUsernamesAsync, toggleSection} from "../../../state/store/todos/todosActions.ts";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useAppDispatch, useAppSelector } from "../../../state/store/hooks.ts";
+import { toggleSection } from "../../../state/store/todos/todosSlice.ts";
+import { fetchTodosWithUsernamesAsync } from "../../../state/store/todos/todosThunks.ts";
 import TodoItem from "./TodoItem.tsx";
 import TodoButton from "../../components/TodoButton.tsx";
-import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles.ts";
-import {RouteConfig} from "../../../configs/routeConfig.ts";
-import type {AppDispatch, RootState} from "../../../state/store/rootReducer.ts";
-import {ThemeConsumer} from "../../../state/context/ThemeProvider.tsx";
-import {selectSections, selectLoading, selectError, selectFilteredSections} from "../../../state/store/todos/todosSelectors.ts";
-import {Section} from "../../../type/ui";
+import { styles as commonStyles } from "../../styles/styles.ts";
+import { RouteConfig } from "../../../configs/routeConfig.ts";
+import { ThemeConsumer } from "../../../state/context/ThemeProvider.tsx";
+import { selectLoading, selectError, selectFilteredSections } from "../../../state/store/todos/todosSelectors.ts";
 
-interface TodoListProps {
-    navigation: NavigationProp<any>;
-    loading: boolean;
-    error: string | null;
-    fetchTodosWithUsernamesAsync: () => void;
-    toggleSection: (title: string) => void;
-    filterSections: (filter: string) => Section[];
-}
+type FilterType = "All" | "Done" | "UnDone";
 
-class TodoListContainer extends Component<TodoListProps, { filter: string }> {
-    constructor(props: TodoListProps) {
-        super(props);
-        this.state = {
-            filter: 'All',
-        };
-    }
+const TodoListContainer: React.FC = () => {
+    const navigation = useNavigation<NavigationProp<any>>();
+    const dispatch = useAppDispatch();
 
-    componentDidMount() {
-        this.props.fetchTodosWithUsernamesAsync();
-    }
+    const [filter, setFilter] = useState<FilterType>("All");
 
-    handleAddTodo = () => {
-        this.props.navigation.navigate(RouteConfig.ADD_TODO);
+    const loading = useAppSelector(selectLoading);
+    const error = useAppSelector(selectError);
+    const sections = useAppSelector(state => selectFilteredSections(state, filter));
+
+    useEffect(() => {
+        dispatch(fetchTodosWithUsernamesAsync());
+    }, [dispatch]);
+
+    const handleAddTodo = () => {
+        navigation.navigate(RouteConfig.ADD_TODO);
     };
 
-    setFilter = (filter: string) => {
-        this.setState({ filter });
-    };
-
-    render() {
-        const {loading, error, filterSections} = this.props;
-        const {filter} = this.state;
-        const filteredSections = filterSections(filter);
-
-        //Tip：类组件，ThemeConsumer获取主题全局状态
-        return (
-            <ThemeConsumer>
-                {({titleColor}) => (
-                    <View style={commonStyles.container}>
-                        <Text style={[{color: titleColor}, commonStyles.title]}>
-                            Todo List
-                        </Text>
-                        <View style={styles.filterContainer}>
-                            {['All', 'Done', 'UnDone'].map((type) => (
-                                <TouchableOpacity
-                                    key={type}
-                                    onPress={() => this.setFilter(type)}
-                                    style={[
-                                        styles.filterButton,
-                                        filter === type && {backgroundColor: titleColor},
-                                    ]}
+    //Tip：函数组件 + hooks，ThemeConsumer获取主题全局状态
+    return (
+        <ThemeConsumer>
+            {({ titleColor }) => (
+                <View style={commonStyles.container}>
+                    <Text style={[{ color: titleColor }, commonStyles.title]}>Todo List</Text>
+                    <View style={styles.filterContainer}>
+                        {(["All", "Done", "UnDone"] as FilterType[]).map((type) => (
+                            <TouchableOpacity
+                                key={type}
+                                onPress={() => setFilter(type)}
+                                style={[styles.filterButton, filter === type && { backgroundColor: titleColor }]}
+                            >
+                                <Text
+                                    style={[styles.filterButtonText, filter === type && { color: "white" }]}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.filterButtonText,
-                                            filter === type && {color: 'white'},
-                                        ]}
-                                    >
-                                        {type}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                        <View style={styles.listContainer}>
-                            {loading ? (
-                                <ActivityIndicator size="large" color="#0000ff"/>
-                            ) : error ? (
-                                <Text style={styles.errorText}>Error: {error}</Text>
-                            ) : (
-                                <SectionList
-                                    sections={filteredSections}
-                                    keyExtractor={(item) => item.id.toString()}
-                                    renderSectionHeader={({section: {title, expanded}}) => (
-                                        <TouchableOpacity onPress={() => this.props.toggleSection(title)}>
-                                            <View style={styles.sectionHeader}>
-                                                <Text style={styles.sectionTitle}>{title}</Text>
-                                                <Image
-                                                    source={expanded ? require('../../../assets/icons/setion_header_down.png') : require('../../../assets/icons/section_header_up.png')}
-                                                    style={styles.icon}
-                                                />
-                                            </View>
-                                        </TouchableOpacity>
-                                    )}
-                                    renderItem={({item, section}) =>
-                                        section.expanded ? <TodoItem todo={item}/> : null
-                                    }
-                                    style={styles.flatList}
-                                />
-                            )}
-                            <TodoButton
-                                title="Add Todo"
-                                onPress={this.handleAddTodo}
-                                style={styles.addButton}
-                            />
-                        </View>
+                                    {type}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
                     </View>
-                )}
-            </ThemeConsumer>
-        );
-    }
-}
-
-const mapStateToProps = (state: RootState) => ({
-    sections: selectSections(state),
-    loading: selectLoading(state),
-    error: selectError(state),
-    filterSections: (filter: string) => selectFilteredSections(state, filter),
-});
-
-const mapDispatchToProps = (dispatch: AppDispatch) => ({
-    fetchTodosWithUsernamesAsync: () => dispatch(fetchTodosWithUsernamesAsync()),
-    toggleSection: (title: string) => dispatch(toggleSection(title)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(TodoListContainer);
+                    <View style={styles.listContainer}>
+                        {loading ? (
+                            <ActivityIndicator size="large" color="#0000ff" />
+                        ) : error ? (
+                            <Text style={styles.errorText}>Error: {error}</Text>
+                        ) : (
+                            <SectionList
+                                sections={sections}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderSectionHeader={({ section: { title, expanded } }) => (
+                                    <TouchableOpacity onPress={() => dispatch(toggleSection(title))}>
+                                        <View style={styles.sectionHeader}>
+                                            <Text style={styles.sectionTitle}>{title}</Text>
+                                            <Image
+                                                source={expanded ? require("../../../assets/icons/setion_header_down.png") : require("../../../assets/icons/section_header_up.png")}
+                                                style={styles.icon}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
+                                renderItem={({ item, section }) =>
+                                    section.expanded ? <TodoItem todo={item} /> : null
+                                }
+                                style={styles.flatList}
+                            />
+                        )}
+                        <TodoButton title="Add Todo" onPress={handleAddTodo} style={styles.addButton} />
+                    </View>
+                </View>
+            )}
+        </ThemeConsumer>
+    );
+};
+export default TodoListContainer;
 
 // Styles
 const styles = StyleSheet.create({

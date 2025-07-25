@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
 
-import {addTodo} from "../../../state/store/todos/todosActions.ts";
+import {addTodo} from "../../../state/store/todos/todosSlice.ts";
 import type {NavigationProp} from "@react-navigation/native";
 import {styles as commonStyles} from "../../styles/styles.ts";
 import type {AppDispatch} from "../../../state/store/rootReducer.ts";

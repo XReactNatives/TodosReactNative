@@ -1,52 +1,43 @@
 //Todos列表Item组件
-import React, { Component } from "react";
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { connect } from "react-redux";
-
-import { deleteTodo, markTodoAsDone } from "../../../state/store/todos/todosActions.ts";
+import { useAppDispatch } from "../../../state/store/hooks.ts";
+import { deleteTodo, markTodoAsDone } from "../../../state/store/todos/todosSlice.ts";
 import type { TodoWithUsername } from "../../../type/ui";
 import TodoButton from "../../components/TodoButton.tsx";
 
 interface TodoItemProps {
     todo: TodoWithUsername;
-    deleteTodo: (id: number) => void;
-    markTodoAsDone: (id: number) => void;
 }
 
-class TodoItem extends Component<TodoItemProps> {
-    handleDelete = () => {
-        this.props.deleteTodo(this.props.todo.id);
+const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
+    const dispatch = useAppDispatch();
+    const isDone = todo.completed;
+
+    const handleDelete = () => {
+        dispatch(deleteTodo(todo.id));
     };
 
-    handleDone = () => {
-        this.props.markTodoAsDone(this.props.todo.id);
+    const handleDone = () => {
+        dispatch(markTodoAsDone(todo.id));
     };
 
-    render() {
-        const { todo } = this.props;
-        const isDone = todo.completed;
-
-        return (
-            <View style={styles.itemContainer}>
-                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                    {todo.title}
-                </Text>
-                <View style={styles.buttonContainer}>
-                    {!isDone ? (
-                        <TodoButton title="Done" onPress={this.handleDone} />
-                    ) : (
-                        <TodoButton
-                            title="Done"
-                            onPress={() => {}}
-                            style={styles.doneButton}
-                        />
-                    )}
-                    <TodoButton title="Delete" onPress={this.handleDelete} style={styles.deleteButton} />
-                </View>
+    return (
+        <View style={styles.itemContainer}>
+            <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                {todo.title}
+            </Text>
+            <View style={styles.buttonContainer}>
+                <TodoButton
+                    title="Done"
+                    onPress={isDone ? () => {} : handleDone}
+                    style={isDone ? styles.doneButton : undefined}
+                />
+                <TodoButton title="Delete" onPress={handleDelete} style={styles.deleteButton} />
             </View>
-        );
-    }
-}
+        </View>
+    );
+};
 
 //Tip：局部样式，组件内单独使用的方式通过StyleSheet定义在组件内部
 const styles = StyleSheet.create({
@@ -76,9 +67,4 @@ const styles = StyleSheet.create({
     },
 });
 
-const mapDispatchToProps = {
-    deleteTodo,
-    markTodoAsDone,
-};
-
-export default connect(null, mapDispatchToProps)(TodoItem);
+export default TodoItem;
