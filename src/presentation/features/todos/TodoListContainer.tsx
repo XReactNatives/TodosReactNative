@@ -11,8 +11,7 @@ import { styles as commonStyles } from "../../styles/styles.ts";
 import { RouteConfig } from "../../../configs/routeConfig.ts";
 import { ThemeConsumer } from "../../../state/context/ThemeProvider.tsx";
 import { selectLoading, selectError, selectFilteredSections,selectFilterCount } from "../../../state/store/todos/todosSelectors.ts";
-
-type FilterType = "All" | "Done" | "UnDone";
+import type { FilterType } from "../../../type/ui/filter.d.ts";
 
 // Tips：展示层 - Container
 // 定义：连接 Redux 的 UI 容器组件，负责数据获取、状态订阅与事件分发。

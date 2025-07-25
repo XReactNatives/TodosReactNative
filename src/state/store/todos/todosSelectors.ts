@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect';
 import type { RootState } from '../rootReducer.ts';
+import type { FilterType } from "../../../type/ui/filter.d.ts";
 
 //Tips：状态层-Selectors
 //定义：
@@ -38,7 +39,7 @@ export const selectError = createSelector(
 );
 
 // 新增选择器：根据过滤器获取sections
-export const selectFilteredSections = (state: RootState, filter: string) => {
+export const selectFilteredSections = (state: RootState, filter: FilterType) => {
     const sections = selectSections(state);
     switch (filter) {
         case 'Done':
@@ -62,7 +63,7 @@ export const selectFilteredSections = (state: RootState, filter: string) => {
 
 export const selectFilterCount = (
     state: RootState,
-    filter: "All" | "Done" | "UnDone"
+    filter: FilterType
 ) => {
     const sections = selectSections(state);
     const list = sections.flatMap((sec) => sec.data);

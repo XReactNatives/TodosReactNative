@@ -1,0 +1,1 @@
+export type FilterType = "All" | "Done" | "UnDone"; 
