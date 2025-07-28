@@ -5,3 +5,17 @@ export type Todo = {
     title: string;
     completed: boolean;
 }; 
+
+// API 请求参数类型定义
+export type FetchTodosParams = {
+    userId?: number;
+};
+
+// API 响应结果类型定义
+export type FetchTodosResult = Todo[];
+
+// API 错误类型定义
+export type TodosApiError = {
+    message: string;
+    status?: number;
+}; 

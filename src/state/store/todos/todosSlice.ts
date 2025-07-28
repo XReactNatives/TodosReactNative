@@ -1,15 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Section, TodoWithUsername } from "../../../type/ui";
-import { fetchTodosWithUsernamesAsync } from "./todosThunks.ts";
+import type { User } from "../../../type/api";
+import { fetchTodosAsync, fetchUsersAsync } from "./todosThunks.ts";
 
 interface TodosState {
     sections: Section[];
+    users: User[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: TodosState = {
     sections: [],
+    users: [],
     loading: false,
     error: null,
 };
@@ -80,15 +83,28 @@ const todosSlice = createSlice({
     // • 支持链式 builder API，类型安全且自动补全。
     extraReducers: (builder) => {
         builder
-            .addCase(fetchTodosWithUsernamesAsync.pending, (state) => {
+            // users async
+            .addCase(fetchUsersAsync.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchTodosWithUsernamesAsync.fulfilled, (state, { payload }) => {
+            .addCase(fetchUsersAsync.fulfilled, (state, { payload }) => {
+                state.loading = false;
+                state.users = payload;
+            })
+            .addCase(fetchUsersAsync.rejected, (state, action) => {
+                state.error = action.payload ?? action.error.message ?? "Unknown error";
+            })
+            // todos async
+            .addCase(fetchTodosAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTodosAsync.fulfilled, (state, { payload }) => {
                 state.loading = false;
                 state.sections = payload;
             })
-            .addCase(fetchTodosWithUsernamesAsync.rejected, (state, action) => {
+            .addCase(fetchTodosAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload ?? action.error.message ?? "Unknown error";
             });
@@ -111,4 +127,4 @@ export const {
     toggleSection,
 } = todosSlice.actions;
 
-export default todosSlice.reducer; 
+export default todosSlice.reducer;

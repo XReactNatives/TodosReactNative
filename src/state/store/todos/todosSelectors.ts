@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import type { RootState } from '../rootReducer.ts';
-import type { FilterType } from "../../../type/ui/filter.d.ts";
+import { FilterType, filterPredicate } from "../../../type/ui/filter";
 
 //Tips：状态层-Selectors
 //定义：
@@ -40,39 +40,16 @@ export const selectError = createSelector(
 
 // 新增选择器：根据过滤器获取sections
 export const selectFilteredSections = (state: RootState, filter: FilterType) => {
-    const sections = selectSections(state);
-    switch (filter) {
-        case 'Done':
-            return sections
-                .map(section => ({
-                    ...section,
-                    data: section.data.filter(todo => todo.completed),
-                }))
-                .filter(section => section.data.length > 0);
-        case 'UnDone':
-            return sections
-                .map(section => ({
-                    ...section,
-                    data: section.data.filter(todo => !todo.completed),
-                }))
-                .filter(section => section.data.length > 0);
-        default:
-            return sections;
-    }
+    const pred = filterPredicate[filter];
+    return selectSections(state)
+        .map(section => ({ ...section, data: section.data.filter(todo => pred(todo.completed)) }))
+        .filter(section => section.data.length > 0 || filter === "All");
 };
 
 export const selectFilterCount = (
     state: RootState,
     filter: FilterType
 ) => {
-    const sections = selectSections(state);
-    const list = sections.flatMap((sec) => sec.data);
-    switch (filter) {
-        case "Done":
-            return list.filter((t) => t.completed).length;
-        case "UnDone":
-            return list.filter((t) => !t.completed).length;
-        default:
-            return list.length;
-    }
+    const list = selectSections(state).flatMap(sec => sec.data);
+    return list.filter(t => filterPredicate[filter](t.completed)).length;
 };

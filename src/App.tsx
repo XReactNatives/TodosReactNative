@@ -12,10 +12,8 @@ import {RouteConfig} from "./configs/routeConfig";
 import {CounterContainer} from "./presentation/features/counter/CounterContainer.tsx";
 import {makeServer} from "./mirage/mirageServer"; // 导入 makeServer
 
-// 初始化 Mirage JS 服务器
-if (process.env.NODE_ENV === "development") {
-  makeServer();
-}
+// 初始化 Mirage JS 服务器 - 所有环境都使用 Mock
+makeServer();
 
 const Stack = createNativeStackNavigator();
 

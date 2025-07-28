@@ -11,19 +11,41 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Section } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
+import { fetchUsersFromAPI } from "../../../service/usersService.ts";
+import type { User } from "../../../type/api";
+import type { RootState } from "../rootReducer.ts";
+
+// 异步获取用户列表（页面级）
+export const fetchUsersAsync = createAsyncThunk<
+  User[],
+  void,
+  { rejectValue: string }
+>("users/fetch", async (_, { rejectWithValue }) => {
+  try {
+    return await fetchUsersFromAPI();
+  } catch (err) {
+    if (err instanceof Error) return rejectWithValue(err.message);
+    return rejectWithValue("Unknown error");
+  }
+});
+
 
 // 异步 thunk：获取 todos 并按用户名分组
-export const fetchTodosWithUsernamesAsync = createAsyncThunk<
+export const fetchTodosAsync = createAsyncThunk<
     Section[],
-    void,
-    { rejectValue: string }
->("todos/fetchTodosWithUsernames", async (_, { rejectWithValue }) => {
+    number | undefined,
+    { state: RootState; rejectValue: string }
+>("todos/fetchTodos", async (userId, { rejectWithValue, getState }) => {
     try {
-        return await getTodosWithSections();
+        const usersCache = getState().todos.users;
+        if (usersCache.length === 0) {
+            return rejectWithValue("Users not loaded");
+        }
+        return await getTodosWithSections(userId, usersCache);
     } catch (err) {
         if (err instanceof Error) {
             return rejectWithValue(err.message);
         }
         return rejectWithValue("Unknown error occurred");
     }
-}); 
+});

@@ -1,18 +1,4 @@
-//API 配置文件
+//API 配置文件 - 统一使用 Mock 数据
 export const apiConfig = {
-  production: {
-    baseURL: 'https://jsonplaceholder.typicode.com',
-  },
-  development: {
-    baseURL: 'https://mock.typicode.com',
-  },
-
-  /**
-   * 根据环境获取api配置
-   */
-  get getConfigByEnv() {
-    return process.env.NODE_ENV === 'production'
-      ? this.production
-      : this.development;
-  },
+  baseURL: 'http://localhost:3000', // 统一使用 Mirage 服务器
 };

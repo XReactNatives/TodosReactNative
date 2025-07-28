@@ -10,15 +10,18 @@
 // • 纯函数 + Promise，易于测试与类型推导。
 
 import {fetchTodosFromAPI} from "../service/todosService";
-import {fetchUsersFromAPI} from "../service/usersService";
 import type {Section, TodoWithUsername} from "../type/ui";
+import type { User } from "../type/api";
 
-export const getTodosWithSections = async (): Promise<Section[]> => {
-    const todos = await fetchTodosFromAPI();
-    const users = await fetchUsersFromAPI();
-
+export const getTodosWithSections = async (
+    userId: number | undefined,
+    usersCache: User[]
+): Promise<Section[]> => {
+    const todos = await fetchTodosFromAPI({ userId });
+    
+    // 直接使用传入的 usersCache，因为调用方已经确保其有效性
     const grouped = todos.reduce((acc, todo) => {
-        const findUser = users.find(user => Number(user.id) === todo.userId);
+        const findUser = usersCache.find(user => Number(user.id) === todo.userId);
         const username = findUser ? findUser.username : "Unknown";
         if (!acc[username]) {
             acc[username] = [];

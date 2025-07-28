@@ -1,9 +1,9 @@
-import {createServer, Model, Response} from 'miragejs';
+import {createServer, Model} from 'miragejs';
 
 import {apiConfig} from '../configs/apiConfig';
 
-const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
-const usersApiUrl = `${apiConfig.getConfigByEnv.baseURL}/users`;
+const todosApiUrl = `${apiConfig.baseURL}/todos`;
+const usersApiUrl = `${apiConfig.baseURL}/users`;
 
 export function makeServer({environment = 'development'} = {}) {
   return createServer({
@@ -15,24 +15,58 @@ export function makeServer({environment = 'development'} = {}) {
     },
 
     seeds(server) {
-      //FIXME id为什么总是默认是string类型？？
       server.create('todo', {
         userId: 1,
         id: 1,
-        title: 'delectus aut autem1111',
+        title: 'user1 todo1 title',
         completed: false,
       });
       server.create('todo', {
         userId: 1,
         id: 2,
-        title: 'quis ut nam facilis et officia qui',
+        title: 'user1 todo2 title',
+        completed: true,
+      });
+
+      server.create('todo', {
+        userId: 2,
+        id: 3,
+        title: 'user2 todo1 title',
+        completed: true,
+      });
+
+      server.create('todo', {
+        userId: 2,
+        id: 4,
+        title: 'user2 todo2 title',
         completed: false,
       });
 
       server.create('user', {
         id: 1,
         name: 'Leanne Graham',
-        username: 'Bret',
+        username: 'user1',
+        email: 'Sincere@april.biz',
+        address: {
+          street: 'Kulas Light',
+          suite: 'Apt. 556',
+          city: 'Gwenborough',
+          zipcode: '92998-3874',
+          geo: {lat: '-37.3159', lng: '81.1496'},
+        },
+        phone: '1-770-736-8031 x56442',
+        website: 'hildegard.org',
+        company: {
+          name: 'Romaguera-Crona',
+          catchPhrase: 'Multi-layered client-server neural-net',
+          bs: 'harness real-time e-markets',
+        },
+      });
+
+      server.create('user', {
+        id: 2,
+        name: 'Leanne Graham2222',
+        username: 'user2',
         email: 'Sincere@april.biz',
         address: {
           street: 'Kulas Light',
@@ -68,26 +102,31 @@ export function makeServer({environment = 'development'} = {}) {
       //单独延时返回
       this.get(
         todosApiUrl,
-        schema => {
-          return schema.todos.all().models;
+        (schema, request) => {
+          const userId = request.queryParams.userId;
+          let todos = schema.todos.all().models;
+          if (userId) {
+            todos = todos.filter((t:any) => Number(t.userId) === Number(userId));
+          }
+          return todos;
         },
-        {timing: 4000},
+        {timing: 1000},
       );
 
       // this.get(usersApiUrl, schema => {
       //   return schema.users.all().models;
       // });
 
-      this.get(usersApiUrl, _ => {
-        return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
-      });
+      // this.get(usersApiUrl, _ => {
+      //   return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
+      // });
 
       this.get(
         usersApiUrl,
         schema => {
           return schema.users.all().models;
         },
-        {timing: 4000},
+        {timing: 1000},
       );
     },
   });

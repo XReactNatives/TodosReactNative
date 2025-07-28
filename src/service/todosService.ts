@@ -1,7 +1,7 @@
 import { apiConfig } from "../configs/apiConfig";
-import type { Todo } from "../type/api";
+import type { FetchTodosParams, FetchTodosResult, TodosApiError } from "../type/api";
 
-const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
+const todosApiUrl = `${apiConfig.baseURL}/todos`;
 
 // Tips：服务层 - Service
 // 定义：直接与后端或 Mock API 交互的纯网络请求封装，不包含业务规则。
@@ -12,15 +12,39 @@ const todosApiUrl = `${apiConfig.getConfigByEnv.baseURL}/todos`;
 // 优势：
 // • 单一职责，易于 Mock 和复用；
 // • 给上层提供干净、统一的数据获取接口。
-export const fetchTodosFromAPI = async (): Promise<Todo[]> => {
-    const response = await fetch(todosApiUrl, {
-        method: "GET",
-    });
 
-    if (!response.ok) {
-        throw new Error("Network response was not ok");
+/**
+ * 获取待办事项列表
+ * @param params - 请求参数，包含可选的 userId
+ * @returns Promise<FetchTodosResult> - 返回待办事项数组
+ * @throws TodosApiError - 网络错误或服务器错误
+ */
+export const fetchTodosFromAPI = async (params: FetchTodosParams): Promise<FetchTodosResult> => {
+    const { userId } = params;
+    const url = userId ? `${todosApiUrl}?userId=${userId}` : todosApiUrl;
+    
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            const error: TodosApiError = {
+                message: `HTTP ${response.status}: ${response.statusText}`,
+                status: response.status
+            };
+            throw error;
+        }
+
+        const data: FetchTodosResult = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error) {
+            const apiError: TodosApiError = {
+                message: error.message
+            };
+            throw apiError;
+        }
+        throw error;
     }
-
-    const data: Todo[] = await response.json();
-    return data;
 };

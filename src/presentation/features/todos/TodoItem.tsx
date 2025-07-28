@@ -32,21 +32,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
 
     const buttonTitle = isDone ? "Undo" : "Done";
 
-    return (
-        <View style={styles.itemContainer}>
-            <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                {todo.title}
-            </Text>
-            <View style={styles.buttonContainer}>
-                <TodoButton
+        return (
+            <View style={styles.itemContainer}>
+                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                    {todo.title}
+                </Text>
+                <View style={styles.buttonContainer}>
+                        <TodoButton
                     title={buttonTitle}
                     onPress={handleToggleDone}
                     style={isDone ? styles.doneButton : undefined}
-                />
+                        />
                 <TodoButton title="Delete" onPress={handleDelete} style={styles.deleteButton} />
+                </View>
             </View>
-        </View>
-    );
+        );
 };
 
 //Tip：局部样式，组件内单独使用的方式通过StyleSheet定义在组件内部
