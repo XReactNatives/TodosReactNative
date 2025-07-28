@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Section, TodoForUI, UserForUI } from "../../../type/ui";
-import { fetchTodosAsync, fetchUsersAsync } from "./todosThunks.ts";
+import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync } from "./todosThunks.ts";
 
 interface TodosState {
     users: UserForUI[];
@@ -24,7 +24,7 @@ const initialState: TodosState = {
 // 3. 在 extraReducers 中消费异步 Thunk 的生命周期 Action。
 // 优势：
 // • 自动生成 Action Type，减少 switch 树与样板；
-// • 内置 Immer，可用“可变”语法编写纯函数；
+// • 内置 Immer，可用"可变"语法编写纯函数；
 // • 状态、逻辑、Action 同文件集中，易于维护与重构。
 const todosSlice = createSlice({
     name: "todos",
@@ -55,14 +55,6 @@ const todosSlice = createSlice({
                     data: section.data.filter((todo) => todo.id !== payload),
                 }))
                 .filter((section) => section.data.length > 0);
-        },
-        markTodoAsDone: (state, { payload }: PayloadAction<number>) => {
-            state.sections = state.sections.map((section) => ({
-                ...section,
-                data: section.data.map((todo) =>
-                    todo.id === payload ? { ...todo, completed: !todo.completed } : todo
-                ),
-            }));
         },
         toggleSection: (state, { payload }: PayloadAction<string>) => {
             state.sections = state.sections.map((section) =>
@@ -106,6 +98,27 @@ const todosSlice = createSlice({
             .addCase(fetchTodosAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload ?? action.error.message ?? "Unknown error";
+            })
+            // toggleTodoStatus async
+            .addCase(toggleTodoStatusAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(toggleTodoStatusAsync.fulfilled, (state, { payload }) => {
+                state.loading = false;
+                // 更新对应的todo状态
+                state.sections = state.sections.map(section => ({
+                    ...section,
+                    data: section.data.map(todo => 
+                        todo.id === payload.todo.id 
+                            ? { ...todo, completed: payload.todo.completed }
+                            : todo
+                    )
+                }));
+            })
+            .addCase(toggleTodoStatusAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message ?? action.error.message ?? "Toggle todo failed";
             });
     },
 });
@@ -118,11 +131,10 @@ const todosSlice = createSlice({
 // 优势：
 // • Action Type 自动生成，少写常量；
 // • 与 Slice 同文件，逻辑集中；
-// • 受益于 Immer，可写“可变”语法提升可读性。
+// • 受益于 Immer，可写"可变"语法提升可读性。
 export const {
     addTodo,
     deleteTodo,
-    markTodoAsDone,
     toggleSection,
 } = todosSlice.actions;
 

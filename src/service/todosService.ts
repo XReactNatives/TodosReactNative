@@ -1,5 +1,12 @@
 import { apiConfig } from "../configs/apiConfig";
-import type { FetchTodosParams, FetchTodosResult, TodosApiError } from "../type/api";
+import type { 
+    FetchTodosParams, 
+    FetchTodosResult, 
+    TodosApiError,
+    ToggleTodoStatusParams,
+    ToggleTodoStatusResult,
+    ToggleTodoStatusError
+} from "../type/api";
 
 const todosApiUrl = `${apiConfig.baseURL}/todos`;
 
@@ -41,6 +48,48 @@ export const fetchTodosFromAPI = async (params: FetchTodosParams): Promise<Fetch
     } catch (error) {
         if (error instanceof Error) {
             const apiError: TodosApiError = {
+                message: error.message
+            };
+            throw apiError;
+        }
+        throw error;
+    }
+};
+
+/**
+ * 切换待办事项状态
+ * @param params - 请求参数，包含 todoId 和 completed 状态
+ * @returns Promise<ToggleTodoStatusResult> - 返回更新结果
+ * @throws ToggleTodoStatusError - 网络错误或服务器错误
+ */
+export const toggleTodoStatusFromAPI = async (
+    params: ToggleTodoStatusParams
+): Promise<ToggleTodoStatusResult> => {
+    const { todoId, completed } = params;
+    const url = `${todosApiUrl}/${todoId}`;
+    
+    try {
+        const response = await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ completed }),
+        });
+
+        if (!response.ok) {
+            const error: ToggleTodoStatusError = {
+                message: `HTTP ${response.status}: ${response.statusText}`,
+                status: response.status
+            };
+            throw error;
+        }
+
+        const data: ToggleTodoStatusResult = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error) {
+            const apiError: ToggleTodoStatusError = {
                 message: error.message
             };
             throw apiError;

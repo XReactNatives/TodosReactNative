@@ -19,3 +19,19 @@ export type TodosApiError = {
     message: string;
     status?: number;
 }; 
+
+// 新增：toggleTodoStatus相关的类型定义
+export type ToggleTodoStatusParams = {
+    todoId: number;
+    completed: boolean;
+};
+
+export type ToggleTodoStatusResult = {
+    success: boolean;
+    todo: Todo;
+};
+
+export type ToggleTodoStatusError = {
+    message: string;
+    status?: number;
+}; 

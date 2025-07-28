@@ -12,7 +12,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Section, UserForUI } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { fetchUsersFromAPI } from "../../../service/usersService.ts";
-import type { User } from "../../../type/api";
+import { toggleTodoStatusFromAPI } from "../../../service/todosService.ts";
+import type { User, ToggleTodoStatusError } from "../../../type/api";
 import type { RootState } from "../rootReducer.ts";
 
 // 数据转换函数：将 API 层的 User 转换为 UI 层的 UserForUI
@@ -58,3 +59,45 @@ export const fetchTodosAsync = createAsyncThunk<
         return rejectWithValue("Unknown error occurred");
     }
 });
+
+// 异步 thunk：切换待办事项状态
+export const toggleTodoStatusAsync = createAsyncThunk<
+    any, // ToggleTodoStatusResult
+    number, // todoId
+    {
+        state: RootState;
+        rejectValue: ToggleTodoStatusError;
+    }
+>(
+    "todos/toggleTodoStatus",
+    async (todoId, { getState, rejectWithValue }) => {
+        try {
+            // 获取当前todo状态
+            const state = getState();
+            const todo = state.todos.sections
+                .flatMap(section => section.data)
+                .find(t => t.id === todoId);
+            
+            if (!todo) {
+                throw new Error("Todo not found");
+            }
+
+            // 调用API
+            const result = await toggleTodoStatusFromAPI({
+                todoId,
+                completed: !todo.completed
+            });
+
+            return result;
+        } catch (error) {
+            if (error instanceof Error) {
+                return rejectWithValue({
+                    message: error.message
+                });
+            }
+            return rejectWithValue({
+                message: "Unknown error occurred"
+            });
+        }
+    }
+);

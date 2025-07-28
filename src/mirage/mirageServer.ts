@@ -113,6 +113,29 @@ export function makeServer({environment = 'development'} = {}) {
         {timing: 1000},
       );
 
+      // 新增：PATCH /todos/:id 接口 - 用于切换todo状态
+      this.patch(
+        `${todosApiUrl}/:id`,
+        (schema, request) => {
+          const { id } = request.params;
+          const { completed } = JSON.parse(request.requestBody);
+
+          const todo = schema.todos.find(id);
+          if (!todo) {
+            return new Response(404, {}, { error: "Todo not found" });
+          }
+
+          // 更新todo状态
+          todo.update({ completed });
+
+          return {
+            success: true,
+            todo: todo.attrs
+          };
+        },
+        { timing: 500 } // 模拟网络延迟
+      );
+
       // this.get(usersApiUrl, schema => {
       //   return schema.users.all().models;
       // });
