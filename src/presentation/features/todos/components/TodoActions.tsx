@@ -1,11 +1,9 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NavigationProp } from "@react-navigation/native";
 import TodoButton from "../../../components/TodoButton";
-
-// 类型定义：TodoActions组件的Props
-interface TodoActionsProps {
-    onAddTodo: () => void;
-}
+import { RouteConfig } from "../../../../configs/routeConfig";
 
 /**
  * Tips：组件拆分原则和思路 - TodoActions
@@ -15,16 +13,16 @@ interface TodoActionsProps {
  * 1. 单一职责原则
  *    - TodoActions只负责操作按钮的渲染和交互
  *    - 包含添加Todo等操作按钮
- *    - 不包含业务逻辑，只处理UI事件
+ *    - 直接处理导航逻辑，不依赖props传递
  * 
  * 2. 可复用性原则
  *    - 可在其他需要操作按钮的页面复用
- *    - 通过props传递回调，不依赖特定的业务逻辑
- *    - 组件接口通用，适应不同的操作需求
+ *    - 通过直接使用导航，不依赖特定的业务逻辑
+ *    - 组件接口简洁，适应不同的操作需求
  * 
  * 3. 可测试性原则
  *    - 组件行为可预测，易于单元测试
- *    - 通过props注入回调函数
+ *    - 通过Mock导航进行测试
  *    - 可以轻松Mock不同的操作场景
  * 
  * 4. 可维护性原则
@@ -33,22 +31,29 @@ interface TodoActionsProps {
  *    - 样式与逻辑分离，便于UI调整
  * 
  * 5. 性能优化原则
- *    - 使用React.memo避免不必要的重渲染
- *    - 按钮点击事件处理简单高效
  *    - 组件体积小，渲染性能好
+ *    - 按钮点击事件处理简单高效
+ *    - 不依赖外部props，减少重渲染
  * 
  * 优势：
  * • 组件职责明确，只处理操作按钮逻辑
+ * • 直接使用导航，减少props传递
  * • 可在多个页面复用，减少重复代码
  * • 便于独立测试，提高代码质量
  * • 组件间耦合度低，修改影响范围小
  */
-const TodoActions: React.FC<TodoActionsProps> = ({ onAddTodo }) => {
+const TodoActions: React.FC = () => {
+    const navigation = useNavigation<NavigationProp<any>>();
+
+    const handleAddTodo = () => {
+        navigation.navigate(RouteConfig.ADD_TODO);
+    };
+
     return (
         <View style={styles.container}>
             <TodoButton
                 title="Add Todo"
-                onPress={onAddTodo}
+                onPress={handleAddTodo}
                 style={styles.addButton}
             />
         </View>

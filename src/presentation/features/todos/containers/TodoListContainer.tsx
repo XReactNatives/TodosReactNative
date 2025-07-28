@@ -1,19 +1,14 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useAppDispatch } from "../../../../state/store/hooks";
+import { fetchTodosAsync, fetchUsersAsync } from "../../../../state/store/todos/todosThunks";
+import { FilterType } from "../../../../type/ui/filter";
 import { ThemeConsumer } from "../../../../state/context/ThemeProvider";
-import { RouteConfig } from "../../../../configs/routeConfig";
 import { styles as commonStyles } from "../../../styles/styles";
-import { useTodoList } from "../hooks/useTodoList";
-import TodoFilters from "../components/TodoFilters";
+import StatusFilter from "../components/StatusFilter";
+import UserFilter from "../components/UserFilter";
 import TodoList from "../components/TodoList";
 import TodoActions from "../components/TodoActions";
-
-// 类型定义：TodoListContainer组件的Props
-interface TodoListContainerProps {
-    // 容器组件通常不需要 props，因为会通过 hooks 获取状态
-    // 但保留类型定义以备将来扩展
-}
 
 /**
  * Tips：组件拆分原则和思路 - TodoListContainer
@@ -23,20 +18,20 @@ interface TodoListContainerProps {
  * 1. 容器组件职责
  *    - 负责组合和布局子组件
  *    - 处理导航和全局主题
- *    - 不包含具体的UI渲染逻辑
- *    - 通过自定义Hook获取业务逻辑
+ *    - 管理UI状态（filter、userId）
+ *    - 负责数据初始化
  * 
  * 2. 组件组合原则
  *    - 将复杂UI拆分为多个子组件
  *    - 每个子组件职责单一，易于维护
- *    - 通过props传递数据和回调
+ *    - 通过props传递UI状态，子组件直接订阅业务状态
  *    - 组件间松耦合，便于独立开发和测试
  * 
  * 3. 状态管理原则
- *    - 使用自定义Hook封装业务逻辑
- *    - 容器组件只关注UI组合和布局
+ *    - UI状态在容器组件中管理，避免过度抽象
+ *    - 业务状态让子组件直接订阅Redux
  *    - 状态变更通过明确的接口进行
- *    - 避免在容器组件中直接操作状态
+ *    - 子组件负责自己的业务状态管理
  * 
  * 4. 可维护性原则
  *    - 组件结构清晰，易于理解和修改
@@ -45,9 +40,9 @@ interface TodoListContainerProps {
  *    - 代码复用性高，减少重复代码
  * 
  * 5. 性能优化原则
- *    - 组件职责单一，避免不必要的重渲染
- *    - 使用React.memo优化子组件
- *    - 状态订阅精确，只订阅需要的状态
+ *    - 容器组件只订阅必要的状态
+ *    - 子组件精确订阅自己需要的状态
+ *    - 状态变化影响范围最小化
  *    - 回调函数优化，避免重复创建
  * 
  * 优势：
@@ -57,26 +52,33 @@ interface TodoListContainerProps {
  * • 组件间耦合度低，修改影响范围小
  * • 状态管理清晰，便于调试和维护
  */
-const TodoListContainer: React.FC<TodoListContainerProps> = () => {
-    const navigation = useNavigation<NavigationProp<any>>();
+const TodoListContainer: React.FC = () => {
+    const dispatch = useAppDispatch();
     
-    // 使用自定义Hook获取业务逻辑和状态
-    const {
-        filter,
-        userId,
-        currentCount,
-        users,
-        sections,
-        loading,
-        error,
-        setFilter,
-        setUserId,
-    } = useTodoList();
+    // UI状态：在容器组件中管理
+    const [filter, setFilter] = useState<FilterType>("All");
+    const [userId, setUserId] = useState<number | undefined>(undefined);
+    
+    // 临时状态：避免初始化时的重复请求
+    const isInitializedRef = useRef(false);
 
-    // 处理添加Todo的导航
-    const handleAddTodo = () => {
-        navigation.navigate(RouteConfig.ADD_TODO);
-    };
+    // 初始化逻辑：确保数据依赖关系正确
+    useEffect(() => {
+        dispatch(fetchUsersAsync())
+            .unwrap()
+            .then(() => dispatch(fetchTodosAsync(undefined)))
+            .then(() => {
+                isInitializedRef.current = true;
+            })
+            .catch(() => {}); // 错误已由 slice 处理
+    }, [dispatch]);
+
+    // 用户过滤逻辑：响应userId变化，重新获取数据
+    useEffect(() => {
+        if (isInitializedRef.current) {
+            dispatch(fetchTodosAsync(userId));
+        }
+    }, [dispatch, userId]);
 
     return (
         <ThemeConsumer>
@@ -87,12 +89,15 @@ const TodoListContainer: React.FC<TodoListContainerProps> = () => {
                         Todo List
                     </Text>
                     
-                    {/* 过滤区域 */}
-                    <TodoFilters
+                    {/* 状态过滤区域 */}
+                    <StatusFilter
                         filter={filter}
                         onFilterChange={setFilter}
-                        currentCount={currentCount}
-                        users={users}
+                        titleColor={titleColor}
+                    />
+                    
+                    {/* 用户过滤区域 */}
+                    <UserFilter
                         selectedUserId={userId}
                         onUserChange={setUserId}
                         titleColor={titleColor}
@@ -100,12 +105,8 @@ const TodoListContainer: React.FC<TodoListContainerProps> = () => {
                     
                     {/* 列表内容区域 */}
                     <View style={styles.listContainer}>
-                        <TodoList
-                            sections={sections}
-                            loading={loading}
-                            error={error}
-                        />
-                        <TodoActions onAddTodo={handleAddTodo} />
+                        <TodoList filter={filter} />
+                        <TodoActions />
                     </View>
                 </View>
             )}

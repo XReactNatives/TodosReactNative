@@ -1,16 +1,15 @@
 import React from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { SectionList, TouchableOpacity, Image } from "react-native";
-import type { Section } from "../../../../type/ui";
-import TodoItem from "./TodoItem";
-import { useAppDispatch } from "../../../../state/store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../../state/store/hooks";
 import { toggleSection } from "../../../../state/store/todos/todosSlice";
+import { selectFilteredSections, selectLoading, selectError } from "../../../../state/store/todos/todosSelectors";
+import type { FilterType } from "../../../../type/ui/filter";
+import TodoItem from "./TodoItem";
 
 // 类型定义：TodoList组件的Props
 interface TodoListProps {
-    sections: Section[];
-    loading: boolean;
-    error: string | null;
+    filter: FilterType;
 }
 
 /**
@@ -21,16 +20,16 @@ interface TodoListProps {
  * 1. 单一职责原则
  *    - TodoList只负责列表的渲染和交互
  *    - 处理加载状态、错误状态、正常状态的UI展示
- *    - 不包含数据获取逻辑，只处理UI事件
+ *    - 直接订阅Redux业务状态，UI状态通过props传递
  * 
  * 2. 可复用性原则
  *    - 可在其他需要展示分组列表的页面复用
- *    - 通过props传递数据，不依赖特定的业务逻辑
- *    - 组件接口通用，适应不同的数据格式
+ *    - 通过Redux状态管理业务数据，UI状态通过props传递
+ *    - 组件接口清晰，适应不同的数据格式
  * 
  * 3. 可测试性原则
  *    - 组件行为可预测，易于单元测试
- *    - 可以Mock不同的数据状态（加载、错误、正常）
+ *    - 可以Mock不同的Redux状态（加载、错误、正常）
  *    - 交互事件处理简单，便于测试
  * 
  * 4. 可维护性原则
@@ -39,22 +38,24 @@ interface TodoListProps {
  *    - 样式与逻辑分离，便于UI调整
  * 
  * 5. 性能优化原则
+ *    - 只订阅需要的业务状态，UI状态通过props传递
  *    - 使用SectionList进行虚拟化渲染
  *    - 条件渲染避免不必要的组件创建
- *    - 事件处理函数优化，避免重复创建
  * 
  * 优势：
  * • 组件职责明确，只处理列表渲染逻辑
+ * • 直接订阅Redux业务状态，减少props传递
  * • 可在多个页面复用，减少重复代码
  * • 便于独立测试，提高代码质量
  * • 状态处理清晰，便于调试和维护
  */
-const TodoList: React.FC<TodoListProps> = ({
-    sections,
-    loading,
-    error,
-}) => {
+const TodoList: React.FC<TodoListProps> = ({ filter }) => {
     const dispatch = useAppDispatch();
+
+    // 直接订阅Redux业务状态
+    const sections = useAppSelector(state => selectFilteredSections(state, filter));
+    const loading = useAppSelector(selectLoading);
+    const error = useAppSelector(selectError);
 
     // 加载状态处理
     if (loading) {
