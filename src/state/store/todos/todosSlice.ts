@@ -1,11 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { Section, TodoWithUsername } from "../../../type/ui";
-import type { User } from "../../../type/api";
+import type { Section, TodoForUI, UserForUI } from "../../../type/ui";
 import { fetchTodosAsync, fetchUsersAsync } from "./todosThunks.ts";
 
 interface TodosState {
     sections: Section[];
-    users: User[];
+    users: UserForUI[];
     loading: boolean;
     error: string | null;
 }
@@ -31,7 +30,7 @@ const todosSlice = createSlice({
     name: "todos",
     initialState,
     reducers: {
-        addTodo: (state, { payload }: PayloadAction<TodoWithUsername>) => {
+        addTodo: (state, { payload }: PayloadAction<TodoForUI>) => {
             const sectionExists = state.sections.some(
                 (section) => section.title === payload.username
             );

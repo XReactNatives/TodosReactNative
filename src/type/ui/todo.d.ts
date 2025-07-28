@@ -1,5 +1,5 @@
 // UI展示用的类型，包含username
-export type TodoWithUsername = {
+export type TodoForUI = {
     id: number;
     username: string;
     title: string;
@@ -9,6 +9,6 @@ export type TodoWithUsername = {
 // Section类型定义，用于UI展示的二级列表
 export interface Section {
     title: string;
-    data: TodoWithUsername[];
+    data: TodoForUI[];
     expanded: boolean;
 }

@@ -3,11 +3,11 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "../../../state/store/hooks.ts";
 import { deleteTodo, markTodoAsDone } from "../../../state/store/todos/todosSlice.ts";
-import type { TodoWithUsername } from "../../../type/ui";
+import type { TodoForUI } from "../../../type/ui";
 import TodoButton from "../../components/TodoButton.tsx";
 
 interface TodoItemProps {
-    todo: TodoWithUsername;
+    todo: TodoForUI;
 }
 
 // Tips：展示层 - Component

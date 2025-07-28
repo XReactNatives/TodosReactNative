@@ -9,20 +9,29 @@
 // • 配合 createAsyncThunk 自动生成 Action Type，减少样板；
 // • 完整的类型推断与统一错误处理。
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Section } from "../../../type/ui";
+import type { Section, UserForUI } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { fetchUsersFromAPI } from "../../../service/usersService.ts";
 import type { User } from "../../../type/api";
 import type { RootState } from "../rootReducer.ts";
 
+// 数据转换函数：将 API 层的 User 转换为 UI 层的 UserForUI
+const transformUserToUI = (user: User): UserForUI => ({
+    id: user.id,
+    username: user.username,
+    name: user.name,
+});
+
 // 异步获取用户列表（页面级）
 export const fetchUsersAsync = createAsyncThunk<
-  User[],
+  UserForUI[],
   void,
   { rejectValue: string }
 >("users/fetch", async (_, { rejectWithValue }) => {
   try {
-    return await fetchUsersFromAPI();
+    const users = await fetchUsersFromAPI();
+    // 转换为 UI 层类型
+    return users.map(transformUserToUI);
   } catch (err) {
     if (err instanceof Error) return rejectWithValue(err.message);
     return rejectWithValue("Unknown error");
