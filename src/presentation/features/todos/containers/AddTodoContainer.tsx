@@ -2,14 +2,15 @@
 import React, {useState} from "react";
 import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
-
-import {addTodo} from "../../../state/store/todos/todosSlice.ts";
 import type {NavigationProp} from "@react-navigation/native";
-import {styles as commonStyles} from "../../styles/styles.ts";
-import type {AppDispatch} from "../../../state/store/rootReducer.ts";
-import TodoButton from "../../components/TodoButton.tsx";
-import {useTheme} from "../../../state/context/ThemeProvider.tsx";
 
+import {addTodo} from "../../../../state/store/todos/todosSlice";
+import {styles as commonStyles} from "../../../styles/styles";
+import type {AppDispatch} from "../../../../state/store/rootReducer";
+import TodoButton from "../../../components/TodoButton";
+import {useTheme} from "../../../../state/context/ThemeProvider";
+
+// 类型定义：AddTodoContainer组件的Props
 interface AddTodoProps {
     navigation: NavigationProp<any>;
 }
@@ -62,4 +63,4 @@ const styles = StyleSheet.create({
     usernameInput: {borderBottomWidth: 1, marginBottom: 20},
 });
 
-export default AddTodoContainer;
+export default AddTodoContainer; 

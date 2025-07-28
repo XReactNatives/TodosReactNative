@@ -27,7 +27,7 @@ export type Company = {
     name: string;
     catchPhrase: string;
     bs: string;
-};
+}; 
 
 // API 请求参数类型定义
 export type FetchUsersParams = {

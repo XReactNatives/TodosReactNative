@@ -6,8 +6,8 @@ import {Provider} from "react-redux";
 import store from "./store"; // 导入存储
 
 
-import TodoList from "./presentation/features/todos/TodoListContainer.tsx";
-import AddTodoContainer from "./presentation/features/todos/AddTodoContainer.tsx";
+import TodoList from "./presentation/features/todos/containers/TodoListContainer";
+import AddTodoContainer from "./presentation/features/todos/containers/AddTodoContainer";
 import {RouteConfig} from "./configs/routeConfig";
 import {CounterContainer} from "./presentation/features/counter/CounterContainer.tsx";
 import {makeServer} from "./mirage/mirageServer"; // 导入 makeServer

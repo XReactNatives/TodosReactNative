@@ -1,11 +1,12 @@
 //Todos列表Item组件
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useAppDispatch } from "../../../state/store/hooks.ts";
-import { deleteTodo, markTodoAsDone } from "../../../state/store/todos/todosSlice.ts";
-import type { TodoForUI } from "../../../type/ui";
-import TodoButton from "../../components/TodoButton.tsx";
+import { useAppDispatch } from "../../../../state/store/hooks";
+import { deleteTodo, markTodoAsDone } from "../../../../state/store/todos/todosSlice";
+import type { TodoForUI } from "../../../../type/ui";
+import TodoButton from "../../../components/TodoButton";
 
+// 类型定义：TodoItem组件的Props
 interface TodoItemProps {
     todo: TodoForUI;
 }
@@ -32,21 +33,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
 
     const buttonTitle = isDone ? "Undo" : "Done";
 
-        return (
-            <View style={styles.itemContainer}>
-                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                    {todo.title}
-                </Text>
-                <View style={styles.buttonContainer}>
-                        <TodoButton
+    return (
+        <View style={styles.itemContainer}>
+            <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                {todo.title}
+            </Text>
+            <View style={styles.buttonContainer}>
+                <TodoButton
                     title={buttonTitle}
                     onPress={handleToggleDone}
                     style={isDone ? styles.doneButton : undefined}
-                        />
+                />
                 <TodoButton title="Delete" onPress={handleDelete} style={styles.deleteButton} />
-                </View>
             </View>
-        );
+        </View>
+    );
 };
 
 //Tip：局部样式，组件内单独使用的方式通过StyleSheet定义在组件内部
@@ -77,4 +78,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TodoItem;
+export default TodoItem; 
