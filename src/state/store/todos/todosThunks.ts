@@ -9,12 +9,40 @@
 // • 配合 createAsyncThunk 自动生成 Action Type，减少样板；
 // • 完整的类型推断与统一错误处理。
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { Platform, ToastAndroid, Alert } from "react-native";
 import type { Section, UserForUI } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { fetchUsersFromAPI } from "../../../service/usersService.ts";
 import { toggleTodoStatusFromAPI } from "../../../service/todosService.ts";
 import type { User, ToggleTodoStatusError } from "../../../type/api";
 import type { RootState } from "../rootReducer.ts";
+
+// Toast工具函数 - 临时内联，稍后移到utils/toast.ts
+const showSuccessToast = (message: string) => {
+    if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+        Alert.alert(
+            'Success',
+            message,
+            [{ text: 'OK', style: 'default' }],
+            { cancelable: true }
+        );
+    }
+};
+
+const showErrorToast = (message: string) => {
+    if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+        Alert.alert(
+            'Error',
+            message,
+            [{ text: 'OK', style: 'default' }],
+            { cancelable: true }
+        );
+    }
+};
 
 // 数据转换函数：将 API 层的 User 转换为 UI 层的 UserForUI
 const transformUserToUI = (user: User): UserForUI => ({
@@ -88,8 +116,14 @@ export const toggleTodoStatusAsync = createAsyncThunk<
                 completed: !todo.completed
             });
 
+            // 成功提示 - 使用Toast
+            showSuccessToast("Todo status updated successfully");
             return result;
         } catch (error) {
+            // 失败提示 - 使用Toast
+            const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+            showErrorToast(`Failed to update todo status: ${errorMessage}`);
+            
             if (error instanceof Error) {
                 return rejectWithValue({
                     message: error.message

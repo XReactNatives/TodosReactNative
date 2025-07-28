@@ -99,13 +99,8 @@ const todosSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload ?? action.error.message ?? "Unknown error";
             })
-            // toggleTodoStatus async
-            .addCase(toggleTodoStatusAsync.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
+            // toggleTodoStatus async - 移除loading状态，避免按钮点击时显示loading
             .addCase(toggleTodoStatusAsync.fulfilled, (state, { payload }) => {
-                state.loading = false;
                 // 更新对应的todo状态
                 state.sections = state.sections.map(section => ({
                     ...section,
@@ -117,7 +112,6 @@ const todosSlice = createSlice({
                 }));
             })
             .addCase(toggleTodoStatusAsync.rejected, (state, action) => {
-                state.loading = false;
                 state.error = action.payload?.message ?? action.error.message ?? "Toggle todo failed";
             });
     },
