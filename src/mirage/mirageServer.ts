@@ -136,6 +136,28 @@ export function makeServer({environment = 'development'} = {}) {
         { timing: 500 } // 模拟网络延迟
       );
 
+      // 新增：DELETE /todos/:id 接口 - 用于删除todo
+      this.delete(
+        `${todosApiUrl}/:id`,
+        (schema, request) => {
+          const { id } = request.params;
+
+          const todo = schema.todos.find(id);
+          if (!todo) {
+            return new Response(404, {}, { error: "Todo not found" });
+          }
+
+          // 删除todo
+          todo.destroy();
+
+          return {
+            success: true,
+            message: "Todo deleted successfully"
+          };
+        },
+        { timing: 500 } // 模拟网络延迟
+      );
+
       // this.get(usersApiUrl, schema => {
       //   return schema.users.all().models;
       // });

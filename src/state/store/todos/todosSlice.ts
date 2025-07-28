@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Section, TodoForUI, UserForUI } from "../../../type/ui";
-import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync } from "./todosThunks.ts";
+import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync, deleteTodoAsync } from "./todosThunks.ts";
 
 interface TodosState {
     users: UserForUI[];
@@ -48,14 +48,7 @@ const todosSlice = createSlice({
                 });
             }
         },
-        deleteTodo: (state, { payload }: PayloadAction<number>) => {
-            state.sections = state.sections
-                .map((section) => ({
-                    ...section,
-                    data: section.data.filter((todo) => todo.id !== payload),
-                }))
-                .filter((section) => section.data.length > 0);
-        },
+        // 移除同步 deleteTodo reducer
         toggleSection: (state, { payload }: PayloadAction<string>) => {
             state.sections = state.sections.map((section) =>
                 section.title === payload
@@ -113,6 +106,20 @@ const todosSlice = createSlice({
             })
             .addCase(toggleTodoStatusAsync.rejected, (state, action) => {
                 state.error = action.payload?.message ?? action.error.message ?? "Toggle todo failed";
+            })
+            // deleteTodo async - 移除loading状态，避免按钮点击时显示loading
+            .addCase(deleteTodoAsync.fulfilled, (state, { meta }) => {
+                // 从sections中删除对应的todo
+                const todoId = meta.arg;
+                state.sections = state.sections
+                    .map((section) => ({
+                        ...section,
+                        data: section.data.filter((todo) => todo.id !== todoId),
+                    }))
+                    .filter((section) => section.data.length > 0);
+            })
+            .addCase(deleteTodoAsync.rejected, (state, action) => {
+                state.error = action.payload?.message ?? action.error.message ?? "Delete todo failed";
             });
     },
 });
@@ -128,7 +135,7 @@ const todosSlice = createSlice({
 // • 受益于 Immer，可写"可变"语法提升可读性。
 export const {
     addTodo,
-    deleteTodo,
+    // 移除 deleteTodo 导出
     toggleSection,
 } = todosSlice.actions;
 

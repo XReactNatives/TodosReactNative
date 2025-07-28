@@ -35,3 +35,18 @@ export type ToggleTodoStatusError = {
     message: string;
     status?: number;
 }; 
+
+// 新增：deleteTodo相关的类型定义
+export type DeleteTodoParams = {
+    todoId: number;
+};
+
+export type DeleteTodoResult = {
+    success: boolean;
+    message: string;
+};
+
+export type DeleteTodoError = {
+    message: string;
+    status?: number;
+}; 

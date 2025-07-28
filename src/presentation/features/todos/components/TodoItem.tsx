@@ -2,8 +2,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "../../../../state/store/hooks";
-import { deleteTodo } from "../../../../state/store/todos/todosSlice";
-import { toggleTodoStatusAsync } from "../../../../state/store/todos/todosThunks";
+import { toggleTodoStatusAsync, deleteTodoAsync } from "../../../../state/store/todos/todosThunks";
 import type { TodoForUI } from "../../../../type/ui";
 import TodoButton from "../../../components/TodoButton";
 
@@ -25,7 +24,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
     const isDone = todo.completed;
 
     const handleDelete = () => {
-        dispatch(deleteTodo(todo.id));
+        dispatch(deleteTodoAsync(todo.id));
     };
 
     const handleToggleDone = () => {
