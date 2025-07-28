@@ -96,7 +96,7 @@ const TodoListContainer: React.FC = () => {
                              onPress={() => setUserId(undefined)}
                              style={[styles.filterButton, userId === undefined && { backgroundColor: titleColor }]}
                           >
-                             <Text style={[styles.filterButtonText, userId === undefined && { color: "white" }]}>All Users</Text>
+                             <Text style={[styles.filterButtonText, userId === undefined && { color: "white" }]}>All</Text>
                           </TouchableOpacity>
                           {users.map(u => (
                              <TouchableOpacity
