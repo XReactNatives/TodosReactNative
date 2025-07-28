@@ -3,15 +3,15 @@ import type { Section, TodoForUI, UserForUI } from "../../../type/ui";
 import { fetchTodosAsync, fetchUsersAsync } from "./todosThunks.ts";
 
 interface TodosState {
-    sections: Section[];
     users: UserForUI[];
+    sections: Section[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: TodosState = {
-    sections: [],
     users: [],
+    sections: [],
     loading: false,
     error: null,
 };
