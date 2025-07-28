@@ -12,8 +12,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Section, UserForUI } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { fetchUsersFromAPI } from "../../../service/usersService.ts";
-import { toggleTodoStatusFromAPI, deleteTodoFromAPI } from "../../../service/todosService.ts";
-import type { User, ToggleTodoStatusError, DeleteTodoError } from "../../../type/api";
+import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI } from "../../../service/todosService.ts";
+import type { User, ToggleTodoStatusError, DeleteTodoError, AddTodoError, AddTodoParams } from "../../../type/api";
 import type { RootState } from "../rootReducer.ts";
 import { showSuccessToast, showErrorToast } from "../../../utils/toast";
 
@@ -131,6 +131,37 @@ export const deleteTodoAsync = createAsyncThunk<
             // 失败提示 - 使用Toast
             const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
             showErrorToast(`Failed to delete todo: ${errorMessage}`);
+            
+            if (error instanceof Error) {
+                return rejectWithValue({
+                    message: error.message
+                });
+            }
+            return rejectWithValue({
+                message: "Unknown error occurred"
+            });
+        }
+    }
+);
+
+// 异步 thunk：添加待办事项
+export const addTodoAsync = createAsyncThunk<
+    any, // AddTodoResult
+    AddTodoParams,
+    {
+        state: RootState;
+        rejectValue: AddTodoError;
+    }
+>(
+    "todos/addTodo",
+    async (params, { rejectWithValue }) => {
+        try {
+            const result = await addTodoFromAPI(params);
+            showSuccessToast("Todo added successfully");
+            return result;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+            showErrorToast(`Failed to add todo: ${errorMessage}`);
             
             if (error instanceof Error) {
                 return rejectWithValue({

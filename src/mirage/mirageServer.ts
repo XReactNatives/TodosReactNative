@@ -158,6 +158,27 @@ export function makeServer({environment = 'development'} = {}) {
         { timing: 500 } // 模拟网络延迟
       );
 
+      // 新增：POST /todos 接口 - 用于添加todo
+      this.post(
+        todosApiUrl,
+        (schema, request) => {
+          const { title, userId, completed = false } = JSON.parse(request.requestBody);
+          
+          // 创建新todo
+          const newTodo = schema.todos.create({
+            title,
+            userId,
+            completed
+          });
+
+          return {
+            success: true,
+            todo: newTodo.attrs
+          };
+        },
+        { timing: 500 } // 模拟网络延迟
+      );
+
       // this.get(usersApiUrl, schema => {
       //   return schema.users.all().models;
       // });

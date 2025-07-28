@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { Section, TodoForUI, UserForUI } from "../../../type/ui";
-import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync, deleteTodoAsync } from "./todosThunks.ts";
+import type { Section, UserForUI } from "../../../type/ui";
+import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync } from "./todosThunks.ts";
 
 interface TodosState {
     users: UserForUI[];
@@ -30,25 +30,7 @@ const todosSlice = createSlice({
     name: "todos",
     initialState,
     reducers: {
-        addTodo: (state, { payload }: PayloadAction<TodoForUI>) => {
-            const sectionExists = state.sections.some(
-                (section) => section.title === payload.username
-            );
-            if (sectionExists) {
-                state.sections = state.sections.map((section) =>
-                    section.title === payload.username
-                        ? { ...section, data: [...section.data, payload] }
-                        : section
-                );
-            } else {
-                state.sections.push({
-                    title: payload.username,
-                    data: [payload],
-                    expanded: true,
-                });
-            }
-        },
-        // 移除同步 deleteTodo reducer
+        // 移除同步 addTodo reducer
         toggleSection: (state, { payload }: PayloadAction<string>) => {
             state.sections = state.sections.map((section) =>
                 section.title === payload
@@ -120,6 +102,30 @@ const todosSlice = createSlice({
             })
             .addCase(deleteTodoAsync.rejected, (state, action) => {
                 state.error = action.payload?.message ?? action.error.message ?? "Delete todo failed";
+            })
+            // addTodo async - 移除loading状态，避免按钮点击时显示loading
+            .addCase(addTodoAsync.fulfilled, (state, { payload }) => {
+                // 将新todo添加到对应的section中
+                const newTodo = payload.todo;
+                const sectionExists = state.sections.some(
+                    (section) => section.title === newTodo.username
+                );
+                if (sectionExists) {
+                    state.sections = state.sections.map((section) =>
+                        section.title === newTodo.username
+                            ? { ...section, data: [...section.data, newTodo] }
+                            : section
+                    );
+                } else {
+                    state.sections.push({
+                        title: newTodo.username,
+                        data: [newTodo],
+                        expanded: true,
+                    });
+                }
+            })
+            .addCase(addTodoAsync.rejected, (state, action) => {
+                state.error = action.payload?.message ?? action.error.message ?? "Add todo failed";
             });
     },
 });
@@ -134,8 +140,7 @@ const todosSlice = createSlice({
 // • 与 Slice 同文件，逻辑集中；
 // • 受益于 Immer，可写"可变"语法提升可读性。
 export const {
-    addTodo,
-    // 移除 deleteTodo 导出
+    // 移除 addTodo 导出
     toggleSection,
 } = todosSlice.actions;
 

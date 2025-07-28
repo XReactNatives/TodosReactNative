@@ -8,7 +8,10 @@ import type {
     ToggleTodoStatusError,
     DeleteTodoParams,
     DeleteTodoResult,
-    DeleteTodoError
+    DeleteTodoError,
+    AddTodoParams,
+    AddTodoResult,
+    AddTodoError
 } from "../type/api";
 
 const todosApiUrl = `${apiConfig.baseURL}/todos`;
@@ -131,6 +134,47 @@ export const deleteTodoFromAPI = async (
     } catch (error) {
         if (error instanceof Error) {
             const apiError: DeleteTodoError = {
+                message: error.message
+            };
+            throw apiError;
+        }
+        throw error;
+    }
+};
+
+/**
+ * 添加待办事项
+ * @param params - 请求参数，包含 title, userId, completed
+ * @returns Promise<AddTodoResult> - 返回添加结果
+ * @throws AddTodoError - 网络错误或服务器错误
+ */
+export const addTodoFromAPI = async (
+    params: AddTodoParams
+): Promise<AddTodoResult> => {
+    const url = todosApiUrl;
+    
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+        });
+
+        if (!response.ok) {
+            const error: AddTodoError = {
+                message: `HTTP ${response.status}: ${response.statusText}`,
+                status: response.status
+            };
+            throw error;
+        }
+
+        const data: AddTodoResult = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error) {
+            const apiError: AddTodoError = {
                 message: error.message
             };
             throw apiError;

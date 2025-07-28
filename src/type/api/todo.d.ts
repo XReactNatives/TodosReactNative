@@ -50,3 +50,20 @@ export type DeleteTodoError = {
     message: string;
     status?: number;
 }; 
+
+// 新增：addTodo相关的类型定义
+export type AddTodoParams = {
+    title: string;
+    userId: number;
+    completed?: boolean;
+};
+
+export type AddTodoResult = {
+    success: boolean;
+    todo: Todo;
+};
+
+export type AddTodoError = {
+    message: string;
+    status?: number;
+}; 

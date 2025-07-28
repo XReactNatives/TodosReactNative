@@ -4,7 +4,7 @@ import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
 import type {NavigationProp} from "@react-navigation/native";
 
-import {addTodo} from "../../../../state/store/todos/todosSlice";
+import {addTodoAsync} from "../../../../state/store/todos/todosThunks";
 import {styles as commonStyles} from "../../../styles/styles";
 import type {AppDispatch} from "../../../../state/store/rootReducer";
 import TodoButton from "../../../components/TodoButton";
@@ -30,8 +30,22 @@ const AddTodoContainer: React.FC<AddTodoProps> = ({navigation}) => {
      * 处理添加Todo按钮点击事件
      */
     const handleAddTodo = () => {
-        const id = Date.now();
-        dispatch(addTodo({id, username, title, completed: false}));
+        if (!username.trim() || !title.trim()) {
+            return; // 简单的表单验证
+        }
+        
+        // 使用异步thunk添加todo
+        dispatch(addTodoAsync({
+            title: title.trim(),
+            userId: 1, // 暂时使用固定userId，后续可以改进
+            completed: false
+        }));
+        
+        // 清空输入框
+        setUsername("");
+        setTitle("");
+        
+        // 返回上一页
         navigation.goBack();
     };
 
