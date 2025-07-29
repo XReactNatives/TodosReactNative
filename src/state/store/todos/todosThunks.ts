@@ -9,7 +9,6 @@
 // • 配合 createAsyncThunk 自动生成 Action Type，减少样板；
 // • 完整的类型推断与统一错误处理。
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "../rootReducer";
 import type { Section } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI } from "../../../service/todosService.ts";
@@ -75,8 +74,7 @@ export const deleteTodoAsync = createAsyncThunk<
     any, // DeleteTodoResult
     number, // todoId
     {
-        state: RootState;
-        rejectValue: ApiError;
+        rejectValue: ApiError; // 移除未使用的 state
     }
 >(
     "todos/deleteTodo",
@@ -110,8 +108,7 @@ export const addTodoAsync = createAsyncThunk<
     any, // AddTodoResult
     AddTodoParams,
     {
-        state: RootState;
-        rejectValue: ApiError;
+        rejectValue: ApiError; // 移除未使用的 state
     }
 >(
     "todos/addTodo",
