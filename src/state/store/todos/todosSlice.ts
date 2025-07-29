@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Section } from "../../../type/ui";
+import type { AppError } from "../../../type/error";
 import { fetchTodosWithSectionsAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync } from "./todosThunks.ts";
 
 interface TodosState {
     sections: Section[];
     loading: boolean;
-    error: string | null;
+    error: AppError | null;
 }
 
 const initialState: TodosState = {
@@ -19,16 +20,28 @@ const initialState: TodosState = {
 // 职责：
 // 1. 声明 todos 状态结构与初始值；
 // 2. 提供 addTodo / deleteTodo 等同步更新逻辑；
-// 3. 在 extraReducers 中消费异步 Thunk 的生命周期 Action。
+// 3. 在 extraReducers 中消费异步 Thunk 的生命周期 Action；
+// 4. 统一错误处理：使用统一的错误类型和处理策略。
 // 优势：
 // • 自动生成 Action Type，减少 switch 树与样板；
 // • 内置 Immer，可用"可变"语法编写纯函数；
-// • 状态、逻辑、Action 同文件集中，易于维护与重构。
+// • 状态、逻辑、Action 同文件集中，易于维护与重构；
+// • 统一的错误处理策略，提高可维护性。
+
+// 统一错误处理函数
+const handleRejectedAction = (state: TodosState, action: any) => {
+    state.loading = false;
+    state.error = action.payload || {
+        code: 'UNKNOWN_ERROR',
+        message: action.error.message || 'An unknown error occurred',
+        timestamp: Date.now(),
+    };
+};
+
 const todosSlice = createSlice({
     name: "todos",
     initialState,
     reducers: {
-        // 移除同步 addTodo reducer
         toggleSection: (state, { payload }: PayloadAction<string>) => {
             state.sections = state.sections.map((section) =>
                 section.title === payload
@@ -47,7 +60,7 @@ const todosSlice = createSlice({
     // • 支持链式 builder API，类型安全且自动补全。
     extraReducers: (builder) => {
         builder
-            // fetchTodosWithSections async - 简化版本，直接获取todos和users
+            // fetchTodosWithSections async
             .addCase(fetchTodosWithSectionsAsync.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -56,28 +69,23 @@ const todosSlice = createSlice({
                 state.loading = false;
                 state.sections = payload;
             })
-            .addCase(fetchTodosWithSectionsAsync.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload ?? action.error.message ?? "Unknown error";
-            })
-            // toggleTodoStatus async - 移除loading状态，避免按钮点击时显示loading
+            .addCase(fetchTodosWithSectionsAsync.rejected, handleRejectedAction)
+
+            // toggleTodoStatus async
             .addCase(toggleTodoStatusAsync.fulfilled, (state, { payload }) => {
-                // 更新对应的todo状态
                 state.sections = state.sections.map(section => ({
                     ...section,
-                    data: section.data.map(todo => 
-                        todo.id === payload.todo.id 
+                    data: section.data.map(todo =>
+                        todo.id === payload.todo.id
                             ? { ...todo, completed: payload.todo.completed }
                             : todo
                     )
                 }));
             })
-            .addCase(toggleTodoStatusAsync.rejected, (state, action) => {
-                state.error = action.payload?.message ?? action.error.message ?? "Toggle todo failed";
-            })
-            // deleteTodo async - 移除loading状态，避免按钮点击时显示loading
+            .addCase(toggleTodoStatusAsync.rejected, handleRejectedAction)
+
+            // deleteTodo async
             .addCase(deleteTodoAsync.fulfilled, (state, { meta }) => {
-                // 从sections中删除对应的todo
                 const todoId = meta.arg;
                 state.sections = state.sections
                     .map((section) => ({
@@ -86,20 +94,18 @@ const todosSlice = createSlice({
                     }))
                     .filter((section) => section.data.length > 0);
             })
-            .addCase(deleteTodoAsync.rejected, (state, action) => {
-                state.error = action.payload?.message ?? action.error.message ?? "Delete todo failed";
-            })
-            // addTodo async - 移除loading状态，避免按钮点击时显示loading
+            .addCase(deleteTodoAsync.rejected, handleRejectedAction)
+
+            // addTodo async
             .addCase(addTodoAsync.fulfilled, (state, { payload }) => {
-                // 将新todo添加到对应的section中
                 const newTodo = payload.todo;
-                
+
                 // 确保newTodo包含username字段
                 if (!newTodo.username) {
                     console.warn('New todo missing username field');
                     return;
                 }
-                
+
                 const sectionExists = state.sections.some(
                     (section) => section.title === newTodo.username
                 );
@@ -117,9 +123,7 @@ const todosSlice = createSlice({
                     });
                 }
             })
-            .addCase(addTodoAsync.rejected, (state, action) => {
-                state.error = action.payload?.message ?? action.error.message ?? "Add todo failed";
-            });
+            .addCase(addTodoAsync.rejected, handleRejectedAction);
     },
 });
 
