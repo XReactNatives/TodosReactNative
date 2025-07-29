@@ -17,33 +17,33 @@ export function makeServer({environment = 'development'} = {}) {
     seeds(server) {
       server.create('todo', {
         userId: 1,
-        id: 1,
+        id: '1',
         title: 'user1 todo1 title',
         completed: false,
       });
       server.create('todo', {
         userId: 1,
-        id: 2,
+        id: '2',
         title: 'user1 todo2 title',
         completed: true,
       });
 
       server.create('todo', {
         userId: 2,
-        id: 3,
+        id: '3',
         title: 'user2 todo1 title',
         completed: true,
       });
 
       server.create('todo', {
         userId: 2,
-        id: 4,
+        id: '4',
         title: 'user2 todo2 title',
         completed: false,
       });
 
       server.create('user', {
-        id: 1,
+        id: '1',
         name: 'Leanne Graham',
         username: 'user1',
         email: 'Sincere@april.biz',
@@ -64,7 +64,7 @@ export function makeServer({environment = 'development'} = {}) {
       });
 
       server.create('user', {
-        id: 2,
+        id: '2',
         name: 'Leanne Graham2222',
         username: 'user2',
         email: 'Sincere@april.biz',
@@ -102,13 +102,8 @@ export function makeServer({environment = 'development'} = {}) {
       //单独延时返回
       this.get(
         todosApiUrl,
-        (schema, request) => {
-          const userId = request.queryParams.userId;
-          let todos = schema.todos.all().models;
-          if (userId) {
-            todos = todos.filter((t:any) => Number(t.userId) === Number(userId));
-          }
-          return todos;
+        (schema) => {
+          return schema.todos.all().models;
         },
         {timing: 1000},
       );
