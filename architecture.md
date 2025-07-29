@@ -350,27 +350,6 @@ export const getTodosWithSections = async (): Promise<Section[]> => {
 
 状态层使用 Redux Toolkit 管理全局状态，包含 Thunks、Actions、Slice 和 Selectors。
 
-#### State类型定义
-
-`src/type/state/todo.d.ts`
-
-```typescript
-// UI展示用的类型，包含username
-export type TodoForUI = {
-    id: number;
-    username: string;
-    title: string;
-    completed: boolean;
-}
-
-// Section类型定义，用于UI展示的二级列表
-export interface Section {
-    title: string;
-    data: TodoForUI[];
-    expanded: boolean;
-}
-```
-
 #### Thunks（异步指令）
 
 `src/state/store/todos/todosThunks.ts`
@@ -475,6 +454,27 @@ export const addTodoAsync = createAsyncThunk<
         }
   }
 );
+```
+
+#### State类型定义
+
+`src/type/state/todo.d.ts`
+
+```typescript
+// UI展示用的类型，包含username
+export type TodoForUI = {
+    id: number;
+    username: string;
+    title: string;
+    completed: boolean;
+}
+
+// Section类型定义，用于UI展示的二级列表
+export interface Section {
+    title: string;
+    data: TodoForUI[];
+    expanded: boolean;
+}
 ```
 
 #### Slice（状态管理）
