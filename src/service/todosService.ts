@@ -1,6 +1,5 @@
 import { apiConfig } from "../configs/apiConfig";
 import type { 
-    FetchTodosParams, 
     FetchTodosResult, 
     TodosApiError,
     ToggleTodoStatusParams,
@@ -28,13 +27,11 @@ const todosApiUrl = `${apiConfig.baseURL}/todos`;
 
 /**
  * 获取待办事项列表
- * @param params - 请求参数，包含可选的 userId
  * @returns Promise<FetchTodosResult> - 返回待办事项数组
  * @throws TodosApiError - 网络错误或服务器错误
  */
-export const fetchTodosFromAPI = async (params: FetchTodosParams): Promise<FetchTodosResult> => {
-    const { userId } = params;
-    const url = userId ? `${todosApiUrl}?userId=${userId}` : todosApiUrl;
+export const fetchTodosFromAPI = async (): Promise<FetchTodosResult> => {
+    const url = todosApiUrl;
     
     try {
         const response = await fetch(url, {
@@ -144,7 +141,7 @@ export const deleteTodoFromAPI = async (
 
 /**
  * 添加待办事项
- * @param params - 请求参数，包含 title, userId, completed
+ * @param params - 请求参数，包含 title, completed
  * @returns Promise<AddTodoResult> - 返回添加结果
  * @throws AddTodoError - 网络错误或服务器错误
  */

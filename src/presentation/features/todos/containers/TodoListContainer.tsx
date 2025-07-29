@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "../../../../state/store/hooks";
-import { fetchTodosAsync, fetchUsersAsync } from "../../../../state/store/todos/todosThunks";
+import { fetchTodosWithSectionsAsync } from "../../../../state/store/todos/todosThunks";
 import { FilterType } from "../../../../type/ui/filter";
 import { ThemeConsumer } from "../../../../state/context/ThemeProvider";
 import { styles as commonStyles } from "../../../styles/styles";
 import StatusFilter from "../components/StatusFilter";
-import UserFilter from "../components/UserFilter";
 import TodoList from "../components/TodoList";
 import TodoActions from "../components/TodoActions";
 
@@ -18,7 +17,7 @@ import TodoActions from "../components/TodoActions";
  * 1. 容器组件职责
  *    - 负责组合和布局子组件
  *    - 处理导航和全局主题
- *    - 管理UI状态（filter、userId）
+ *    - 管理UI状态（filter）
  *    - 负责数据初始化
  * 
  * 2. 组件组合原则
@@ -57,28 +56,11 @@ const TodoListContainer: React.FC = () => {
     
     // UI状态：在容器组件中管理
     const [filter, setFilter] = useState<FilterType>("All");
-    const [userId, setUserId] = useState<number | undefined>(undefined);
-    
-    // 临时状态：避免初始化时的重复请求
-    const isInitializedRef = useRef(false);
 
     // 初始化逻辑：确保数据依赖关系正确
     useEffect(() => {
-        dispatch(fetchUsersAsync())
-            .unwrap()
-            .then(() => dispatch(fetchTodosAsync(undefined)))
-            .then(() => {
-                isInitializedRef.current = true;
-            })
-            .catch(() => {}); // 错误已由 slice 处理
+        dispatch(fetchTodosWithSectionsAsync());
     }, [dispatch]);
-
-    // 用户过滤逻辑：响应userId变化，重新获取数据
-    useEffect(() => {
-        if (isInitializedRef.current) {
-            dispatch(fetchTodosAsync(userId));
-        }
-    }, [dispatch, userId]);
 
     return (
         <ThemeConsumer>
@@ -96,13 +78,7 @@ const TodoListContainer: React.FC = () => {
                         titleColor={titleColor}
                     />
                     
-                    {/* 用户过滤区域 */}
-                    <UserFilter
-                        selectedUserId={userId}
-                        onUserChange={setUserId}
-                        titleColor={titleColor}
-                    />
-                    
+
                     {/* 列表内容区域 */}
                     <View style={styles.listContainer}>
                         <TodoList filter={filter} />

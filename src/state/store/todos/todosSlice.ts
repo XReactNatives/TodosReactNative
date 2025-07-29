@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { Section, UserForUI } from "../../../type/ui";
-import { fetchTodosAsync, fetchUsersAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync } from "./todosThunks.ts";
+import type { Section } from "../../../type/ui";
+import type { UserForUI } from "../../../type/ui/user";
+import { fetchTodosAsync, fetchUsersAsync, fetchTodosWithSectionsAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync } from "./todosThunks.ts";
 
 interface TodosState {
     users: UserForUI[];
@@ -49,6 +50,19 @@ const todosSlice = createSlice({
     // • 支持链式 builder API，类型安全且自动补全。
     extraReducers: (builder) => {
         builder
+            // fetchTodosWithSections async - 简化版本，直接获取todos和users
+            .addCase(fetchTodosWithSectionsAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTodosWithSectionsAsync.fulfilled, (state, { payload }) => {
+                state.loading = false;
+                state.sections = payload;
+            })
+            .addCase(fetchTodosWithSectionsAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload ?? action.error.message ?? "Unknown error";
+            })
             // users async
             .addCase(fetchUsersAsync.pending, (state) => {
                 state.loading = true;

@@ -10,17 +10,17 @@
 // • 纯函数 + Promise，易于测试与类型推导。
 
 import {fetchTodosFromAPI} from "../service/todosService";
-import type {Section, TodoForUI, UserForUI} from "../type/ui";
+import {fetchUsersFromAPI} from "../service/usersService";
+import type {Section, TodoForUI} from "../type/ui";
+import type {User} from "../type/api/user";
 
-export const getTodosWithSections = async (
-    userId: number | undefined,
-    usersCache: UserForUI[]
-): Promise<Section[]> => {
-    const todos = await fetchTodosFromAPI({ userId });
-
-    // 直接使用传入的 usersCache，因为调用方已经确保其有效性
+export const getTodosWithSections = async (): Promise<Section[]> => {
+    const todos = await fetchTodosFromAPI();
+    const users = await fetchUsersFromAPI();
+    
+    // 业务逻辑：将todos按用户名分组，并添加用户名信息
     const grouped = todos.reduce((acc, todo) => {
-        const findUser = usersCache.find(user => Number(user.id) === todo.userId);
+        const findUser = users.find((user: User) => Number(user.id) === todo.userId);
         const username = findUser ? findUser.username : "Unknown";
         if (!acc[username]) {
             acc[username] = [];
