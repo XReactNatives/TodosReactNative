@@ -14,12 +14,6 @@ export type FetchTodosParams = {
 // API 响应结果类型定义
 export type FetchTodosResult = Todo[];
 
-// API 错误类型定义
-export type TodosApiError = {
-    message: string;
-    status?: number;
-}; 
-
 // 新增：toggleTodoStatus相关的类型定义
 export type ToggleTodoStatusParams = {
     todoId: number;
@@ -31,11 +25,6 @@ export type ToggleTodoStatusResult = {
     todo: Todo;
 };
 
-export type ToggleTodoStatusError = {
-    message: string;
-    status?: number;
-}; 
-
 // 新增：deleteTodo相关的类型定义
 export type DeleteTodoParams = {
     todoId: number;
@@ -45,11 +34,6 @@ export type DeleteTodoResult = {
     success: boolean;
     message: string;
 };
-
-export type DeleteTodoError = {
-    message: string;
-    status?: number;
-}; 
 
 // 新增：addTodo相关的类型定义
 export type AddTodoParams = {
@@ -61,9 +45,4 @@ export type AddTodoParams = {
 export type AddTodoResult = {
     success: boolean;
     todo: Todo;
-};
-
-export type AddTodoError = {
-    message: string;
-    status?: number;
 }; 

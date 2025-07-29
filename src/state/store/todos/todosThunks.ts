@@ -13,7 +13,8 @@ import type { RootState } from "../rootReducer";
 import type { Section } from "../../../type/ui";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
 import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI } from "../../../service/todosService.ts";
-import type { ToggleTodoStatusError, DeleteTodoError, AddTodoError, AddTodoParams } from "../../../type/api";
+import type { AddTodoParams } from "../../../type/api";
+import type { ApiError } from "../../../utils/api";
 import { showSuccessToast, showErrorToast } from "../../../utils/toast.ts";
 
 // 异步 thunk：获取 todos 并按用户名分组（简化版本）
@@ -38,7 +39,7 @@ export const toggleTodoStatusAsync = createAsyncThunk<
     number, // todoId
     {
         state: RootState;
-        rejectValue: ToggleTodoStatusError;
+        rejectValue: ApiError;
     }
 >(
     "todos/toggleTodoStatus",
@@ -86,7 +87,7 @@ export const deleteTodoAsync = createAsyncThunk<
     number, // todoId
     {
         state: RootState;
-        rejectValue: DeleteTodoError;
+        rejectValue: ApiError;
     }
 >(
     "todos/deleteTodo",
@@ -121,7 +122,7 @@ export const addTodoAsync = createAsyncThunk<
     AddTodoParams,
     {
         state: RootState;
-        rejectValue: AddTodoError;
+        rejectValue: ApiError;
     }
 >(
     "todos/addTodo",

@@ -35,10 +35,4 @@ export type FetchUsersParams = {
 };
 
 // API 响应结果类型定义
-export type FetchUsersResult = User[];
-
-// API 错误类型定义
-export type UsersApiError = {
-    message: string;
-    status?: number;
-}; 
+export type FetchUsersResult = User[]; 
