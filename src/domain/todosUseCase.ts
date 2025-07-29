@@ -4,12 +4,14 @@
 // 1. 协调多个 Service，获取 Todo 与 User 基础数据；
 // 2. 执行业务逻辑：按用户名分组、合并数据，转换为 Section 结构；
 // 3. 业务规则验证：确保数据符合业务要求；
-// 4. 向外暴露纯 Promise<Section[]> 结果，供 State/Thunk 调用。
+// 4. 数据格式转换：将业务数据转换为UI展示格式；
+// 5. 向外暴露纯 Promise<Section[]> 结果，供 State/Thunk 调用。
 // 优势：
 // • 业务逻辑与状态/UI 解耦，可在 Node 测试或其他前端复用；
 // • 单一出口，集中修改复杂规则；
 // • 纯函数 + Promise，易于测试与类型推导；
-// • 业务规则验证确保数据质量。
+// • 业务规则验证确保数据质量；
+// • 数据格式转换确保UI展示一致性。
 
 import {fetchTodosFromAPI} from "../service/todosService";
 import {fetchUsersFromAPI} from "../service/usersService";
@@ -25,6 +27,11 @@ const validateTodoTitle = (todo: Todo): boolean => {
 // 业务规则验证2：Todo必须属于有效用户
 const validateTodoUser = (todo: Todo, users: User[]): boolean => {
     return users.some(user => Number(user.id) === todo.userId);
+};
+
+// 业务规则：生成section标题（用户名 + 邮箱）
+const generateSectionTitle = (username: string, email: string): string => {
+    return `${username} (${email})`;
 };
 
 export const getTodosWithSections = async (): Promise<Section[]> => {
@@ -58,9 +65,15 @@ export const getTodosWithSections = async (): Promise<Section[]> => {
         return acc;
     }, {} as Record<string, TodoForUI[]>);
 
-    return Object.keys(grouped).map(username => ({
-        title: username,
-        data: grouped[username],
-        expanded: true,
-    }));
+    // 业务逻辑：转换为Section结构，title包含用户名和邮箱
+    return Object.keys(grouped).map(username => {
+        const findUser = users.find((user: User) => user.username === username);
+        const email = findUser ? findUser.email : "unknown@example.com";
+        
+        return {
+            title: generateSectionTitle(username, email),
+            data: grouped[username],
+            expanded: true,
+        };
+    });
 };
