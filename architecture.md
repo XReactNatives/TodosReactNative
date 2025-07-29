@@ -45,163 +45,11 @@ graph TB
     - 服务层 → 领域层（可选） → 状态层 → 展示层。
     - **禁止反向依赖或跨层调用**。
 
-
-## 3、分层（单一）职责
-
-| 层次      | 作用                     | 组成                                                                                        | 目录/文件                                                                                                                                                               |
-|---------|------------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 展示层     | 负责UI的渲染和与用户的交互         | Containers：负责连接Redux和Component<br>Components：负责UI的渲染 | `src/presentation/features/todos/containers/TodoListContainer.tsx`<br>`src/presentation/features/todos/components/TodoList.tsx`<br>`src/presentation/features/todos/components/TodoItem.tsx`<br>`src/presentation/styles/styles.ts`               |
-| 状态层     | 使用Redux Toolkit管理全局状态 | Thunks/Actions：处理异步/同步指令<br>状态管理：<br>• Slice：管理状态和状态变更逻辑<br>• **State类型（可选）：定义状态层使用的数据类型**<br>Selectors（可选）：从store中提取和转换数据              | `src/state/store/todos/todosSlice.ts`<br>`src/state/store/todos/todosThunks.ts`<br>`src/state/store/todos/todosSelectors.ts`<br>`src/state/store/rootReducer.ts`<br>`src/type/state/` |
-| 领域层（可选） | 处理复杂业务逻辑，与UI和数据访问层解耦   | UseCases：处理应用的业务逻辑（包含业务规则验证、**Api到State数据转换**）                                                               | `src/domain/todosUseCase.ts`                                                                                                                                        |
-| 服务层     | 处理与API的交互，提供数据操作接口     | Services：负责与外部API的交互，提供完整的CRUD操作<br>**API类型：定义API请求参数和响应结果的类**型                                                                      | `src/service/todosService.ts`<br>`src/service/usersService.ts`<br>`src/type/api/`                                                                                                      |
-
-## 4、分层（单向）数据流
-
-以下表格总结了各个场景的数据流流程，时序图展示了详细的交互过程：
-
-| 场景 | 流程 |
-|------|------|
-| 数据加载场景 | 展示层(组件挂载) → 状态层(Thunk异步调用) → **服务层(API调用) → 领域层(数据处理) → 状态层(状态更新) → 展示层(UI渲染)** |
-| 状态过滤场景 | 展示层(用户交互/状态更新/组件传递) → **状态层（选择器过滤数据） → 展示层（重新渲染）** |
-| 展开收起场景 | 展示层(用户交互) → 状态层(同步Action) → **状态层(状态更新) → 展示层(重新渲染)** |
-| 切换Todo状态场景 | 展示层（用户交互） → 状态层（Thunk异步调用） → **服务层（API更新） → 状态层（状态更新） → 展示层（Toast提示）** |
-| 删除Todo场景 | 展示层(用户交互) → 状态层(Thunk异步调用) → **服务层(API删除) → 状态层(状态移除) → 展示层(Toast提示)** |
-| 添加Todo场景 | 展示层(用户交互) → 状态层(Thunk异步调用) → **服务层(API创建) → 状态层(状态添加) → 展示层(Toast提示)** |
-
-### 4.1 数据加载场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant View as 展示层<br>(TodoListContainer)
-    participant State as 状态层<br>(todosThunks/todosSlice/todosSelectors)
-    participant Domain as 领域层<br>(TodosUseCase)
-    participant Service as 服务层<br>(todosService)
-    participant Backend as 后端服务
-
-    Note over View,Backend: 组件挂载后自动触发数据加载流程
-    View->>State: useEffect调用fetchTodosWithSectionsAsync
-    State->>State: 分发pending action<br>设置loading=true
-    State->>Domain: 调用getTodosWithSections
-    Domain->>Service: 调用fetchTodosFromAPI
-    Service->>Backend: 发送GET请求到/todos接口
-    Backend-->>Service: 返回Todo列表
-    Service-->>Domain: 返回Todo数据
-    Domain->>Service: 调用fetchUsersFromAPI
-    Service->>Backend: 发送GET请求到/users接口
-    Backend-->>Service: 返回User列表
-    Service-->>Domain: 返回User数据
-    Domain->>Domain: 业务逻辑处理<br>1. 业务规则验证<br>2. 按用户名分组Todos<br>3. 合并Todo和User数据<br>4. 转换为Section结构
-    Domain-->>State: 返回处理后的Sections数据
-    State->>State: 分发fulfilled action<br>更新store中的sections数据<br>设置loading=false
-    State-->>View: useAppSelector获取更新后的数据
-    View->>View: 重新渲染列表展示数据
-```
-
-### 4.2 状态过滤场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Container as 展示层<br>(TodoListContainer/StatusFilter/TodoList)
-    participant State as 状态层<br>(todosSelectors/todosSlice)
-
-    Note over Container,State: 用户点击状态过滤按钮
-    Container->>Container: StatusFilter调用onFilterChange<br>传递新的filter值
-    Container->>Container: TodoListContainer更新内部filter状态<br>setFilter("Done"/"UnDone")
-    Container->>Container: TodoListContainer传递新的filter值<br>通过props给StatusFilter和TodoList
-    Container->>State: TodoList调用selectFilteredSections(filter)
-    State->>State: Selectors根据filter过滤sections数据<br>• Done: 只显示completed=true的todos<br>• UnDone: 只显示completed=false的todos<br>• All: 显示所有todos
-    State-->>Container: 返回过滤后的sections数据给TodoList
-    Container->>Container: TodoList重新渲染过滤后的列表
-```
-
-### 4.3 展开收起场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant View as 展示层<br>(TodoList)
-    participant State as 状态层<br>(todosSlice)
-
-    Note over View,State: 用户点击Section标题展开/收起
-    View->>State: 调用toggleSection(title)<br>传递section标题
-    State->>State: 分发toggleSection action<br>更新对应section的expanded状态<br>• expanded: true → false<br>• expanded: false → true
-    State-->>View: 返回更新后的sections数据
-    View->>View: 重新渲染SectionList<br>根据expanded状态显示/隐藏Todo项
-```
-
-### 4.4 切换Todo状态场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant View as 展示层<br>(TodoItem)
-    participant State as 状态层<br>(todosThunks/todosSlice)
-    participant Service as 服务层<br>(todoService)
-    participant Backend as 后端服务
-
-    Note over View,Backend: 用户点击Do/Undo按钮
-    View->>State: 调用toggleTodoStatusAsync<br>{todoId, currentCompleted}
-    State->>State: 分发pending action<br>设置loading=true
-    State->>Service: 调用toggleTodoStatusFromAPI<br>{todoId, completed: !currentCompleted}
-    Service->>Backend: 发送PATCH请求到/todos/{todoId}
-    Backend-->>Service: 返回更新后的Todo数据
-    Service-->>State: 返回ToggleTodoStatusResult
-    State->>State: 分发fulfilled action<br>更新store中的todo状态<br>显示成功Toast
-    State-->>View: 更新后的sections数据
-    View->>View: 重新渲染Todo项<br>显示新的完成状态
-```
-
-### 4.5 删除Todo场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant View as 展示层<br>(TodoItem)
-    participant State as 状态层<br>(todosThunks/todosSlice)
-    participant Service as 服务层<br>(todosService)
-    participant Backend as 后端服务
-
-    Note over View,Backend: 用户点击Delete按钮
-    View->>State: 调用deleteTodoAsync(todoId)
-    State->>State: 分发pending action<br>设置loading=true
-    State->>Service: 调用deleteTodoFromAPI<br>{todoId}
-    Service->>Backend: 发送DELETE请求到/todos/{todoId}
-    Backend-->>Service: 返回删除结果
-    Service-->>State: 返回DeleteTodoResult
-    State->>State: 分发fulfilled action<br>从store中移除todo<br>显示成功Toast
-    State-->>View: 更新后的sections数据
-    View->>View: 重新渲染列表<br>移除已删除的Todo项
-```
-
-### 4.6 添加Todo场景
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant View as 展示层<br>(AddTodoContainer)
-    participant State as 状态层<br>(todosThunks/todosSlice)
-    participant Service as 服务层<br>(todosService)
-    participant Backend as 后端服务
-
-    Note over View,Backend: 用户填写Todo信息并点击添加
-    View->>State: 调用addTodoAsync<br>{title, username, completed}
-    State->>State: 分发pending action<br>设置loading=true
-    State->>Service: 调用addTodoFromAPI<br>{title, username, completed}
-    Service->>Backend: 发送POST请求到/todos
-    Backend-->>Service: 返回新创建的Todo数据
-    Service-->>State: 返回AddTodoResult
-    State->>State: 分发fulfilled action<br>将新todo添加到对应section<br>显示成功Toast
-    State-->>View: 更新后的sections数据
-    View->>View: 重新渲染列表<br>显示新添加的Todo项
-```
-
-## 5、实践实施
+## 3、实践案例
 
 ![img.png](/imgs/todos.png)
 
-### 5.1 服务层（Service Layer）
+### 3.1 服务层（Service Layer）
 
 服务层负责与外部API交互，提供完整的数据操作接口。
 
@@ -379,7 +227,38 @@ export const addTodoFromAPI = async (
 };
 ```
 
-### 5.2 领域层（Domain Layer）
+
+`src/service/usersService.ts`
+
+```typescript
+// Users API 请求
+import { api } from "../utils/api";
+import type { FetchUsersParams, FetchUsersResult } from "../type/api/user";
+
+const usersEndpoint = "/users";
+
+// Tips：服务层 - Service
+// 定义：直接与后端或 Mock API 交互的纯网络请求封装，不包含业务规则。
+// 职责：
+// 1. 负责发起 HTTP 请求，返回 Promise 数据；
+// 2. 处理最基本的网络错误并抛出异常；
+// 3. 与 Domain/UseCase 解耦，便于替换数据源或做单元测试。
+// 优势：
+// • 单一职责，易于 Mock 和复用；
+// • 给上层提供干净、统一的数据获取接口。
+
+/**
+ * 获取用户列表
+ * @param params - 请求参数（目前为空，保留扩展性）
+ * @returns Promise<FetchUsersResult> - 返回用户数组
+ * @throws ApiError - 网络错误或服务器错误
+ */
+export const fetchUsersFromAPI = async (_params: FetchUsersParams = {}): Promise<FetchUsersResult> => {
+    return api.get<FetchUsersResult>(usersEndpoint);
+};
+```
+
+### 3.2 领域层（Domain Layer）
 
 领域层处理复杂业务逻辑，包含业务规则验证和数据转换。
 
@@ -467,7 +346,7 @@ export const getTodosWithSections = async (): Promise<Section[]> => {
 };
 ```
 
-### 5.3 状态层（State Layer）
+### 3.3 状态层（State Layer）
 
 状态层使用 Redux Toolkit 管理全局状态，包含 Thunks、Actions、Slice 和 Selectors。
 
@@ -795,7 +674,7 @@ export const selectFilteredSections = (state: RootState, filter: FilterType) => 
 };
 ```
 
-### 5.4 展示层（Presentational Layer）
+### 3.4 展示层（Presentational Layer）
 
 展示层负责UI渲染和用户交互，包含 Containers 和 Components。
 
@@ -1075,4 +954,156 @@ const styles = StyleSheet.create({
 });
 
 export default TodoItem;
+```
+
+
+## 4、分层（单一）职责
+
+| 层次      | 作用                     | 组成                                                                                        | 目录/文件                                                                                                                                                               |
+|---------|------------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 展示层     | 负责UI的渲染和与用户的交互         | Containers：负责连接Redux和Component<br>Components：负责UI的渲染 | `src/presentation/features/todos/containers/TodoListContainer.tsx`<br>`src/presentation/features/todos/components/TodoList.tsx`<br>`src/presentation/features/todos/components/TodoItem.tsx`<br>`src/presentation/styles/styles.ts`               |
+| 状态层     | 使用Redux Toolkit管理全局状态 | Thunks/Actions：处理异步/同步指令<br>状态管理：<br>• Slice：管理状态和状态变更逻辑<br>• **State类型（可选）：定义状态层使用的数据类型**<br>Selectors（可选）：从store中提取和转换数据              | `src/state/store/todos/todosSlice.ts`<br>`src/state/store/todos/todosThunks.ts`<br>`src/state/store/todos/todosSelectors.ts`<br>`src/state/store/rootReducer.ts`<br>`src/type/state/` |
+| 领域层（可选） | 处理复杂业务逻辑，与UI和数据访问层解耦   | UseCases：处理应用的业务逻辑（包含业务规则验证、**Api到State数据转换**）                                                               | `src/domain/todosUseCase.ts`                                                                                                                                        |
+| 服务层     | 处理与API的交互，提供数据操作接口     | Services：负责与外部API的交互，提供完整的CRUD操作<br>**API类型：定义API请求参数和响应结果的类**型                                                                      | `src/service/todosService.ts`<br>`src/service/usersService.ts`<br>`src/type/api/`                                                                                                      |
+
+## 5、分层（单向）数据流
+
+以下表格总结了各个场景的数据流流程，时序图展示了详细的交互过程：
+
+| 场景 | 流程 |
+|------|------|
+| 数据加载场景 | 展示层(组件挂载) → 状态层(Thunk异步调用) → **服务层(API调用) → 领域层(数据处理) → 状态层(状态更新) → 展示层(UI渲染)** |
+| 状态过滤场景 | 展示层(用户交互/状态更新/组件传递) → **状态层（选择器过滤数据） → 展示层（重新渲染）** |
+| 展开收起场景 | 展示层(用户交互) → 状态层(同步Action) → **状态层(状态更新) → 展示层(重新渲染)** |
+| 切换Todo状态场景 | 展示层（用户交互） → 状态层（Thunk异步调用） → **服务层（API更新） → 状态层（状态更新） → 展示层（Toast提示）** |
+| 删除Todo场景 | 展示层(用户交互) → 状态层(Thunk异步调用) → **服务层(API删除) → 状态层(状态移除) → 展示层(Toast提示)** |
+| 添加Todo场景 | 展示层(用户交互) → 状态层(Thunk异步调用) → **服务层(API创建) → 状态层(状态添加) → 展示层(Toast提示)** |
+
+### 5.1 数据加载场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant View as 展示层<br>(TodoListContainer)
+    participant State as 状态层<br>(todosThunks/todosSlice/todosSelectors)
+    participant Domain as 领域层<br>(TodosUseCase)
+    participant Service as 服务层<br>(todosService)
+    participant Backend as 后端服务
+
+    Note over View,Backend: 组件挂载后自动触发数据加载流程
+    View->>State: useEffect调用fetchTodosWithSectionsAsync
+    State->>State: 分发pending action<br>设置loading=true
+    State->>Domain: 调用getTodosWithSections
+    Domain->>Service: 调用fetchTodosFromAPI
+    Service->>Backend: 发送GET请求到/todos接口
+    Backend-->>Service: 返回Todo列表
+    Service-->>Domain: 返回Todo数据
+    Domain->>Service: 调用fetchUsersFromAPI
+    Service->>Backend: 发送GET请求到/users接口
+    Backend-->>Service: 返回User列表
+    Service-->>Domain: 返回User数据
+    Domain->>Domain: 业务逻辑处理<br>1. 业务规则验证<br>2. 按用户名分组Todos<br>3. 合并Todo和User数据<br>4. 转换为Section结构
+    Domain-->>State: 返回处理后的Sections数据
+    State->>State: 分发fulfilled action<br>更新store中的sections数据<br>设置loading=false
+    State-->>View: useAppSelector获取更新后的数据
+    View->>View: 重新渲染列表展示数据
+```
+
+### 5.2 状态过滤场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Container as 展示层<br>(TodoListContainer/StatusFilter/TodoList)
+    participant State as 状态层<br>(todosSelectors/todosSlice)
+
+    Note over Container,State: 用户点击状态过滤按钮
+    Container->>Container: StatusFilter调用onFilterChange<br>传递新的filter值
+    Container->>Container: TodoListContainer更新内部filter状态<br>setFilter("Done"/"UnDone")
+    Container->>Container: TodoListContainer传递新的filter值<br>通过props给StatusFilter和TodoList
+    Container->>State: TodoList调用selectFilteredSections(filter)
+    State->>State: Selectors根据filter过滤sections数据<br>• Done: 只显示completed=true的todos<br>• UnDone: 只显示completed=false的todos<br>• All: 显示所有todos
+    State-->>Container: 返回过滤后的sections数据给TodoList
+    Container->>Container: TodoList重新渲染过滤后的列表
+```
+
+### 5.3 展开收起场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant View as 展示层<br>(TodoList)
+    participant State as 状态层<br>(todosSlice)
+
+    Note over View,State: 用户点击Section标题展开/收起
+    View->>State: 调用toggleSection(title)<br>传递section标题
+    State->>State: 分发toggleSection action<br>更新对应section的expanded状态<br>• expanded: true → false<br>• expanded: false → true
+    State-->>View: 返回更新后的sections数据
+    View->>View: 重新渲染SectionList<br>根据expanded状态显示/隐藏Todo项
+```
+
+### 5.4 切换Todo状态场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant View as 展示层<br>(TodoItem)
+    participant State as 状态层<br>(todosThunks/todosSlice)
+    participant Service as 服务层<br>(todoService)
+    participant Backend as 后端服务
+
+    Note over View,Backend: 用户点击Do/Undo按钮
+    View->>State: 调用toggleTodoStatusAsync<br>{todoId, currentCompleted}
+    State->>State: 分发pending action<br>设置loading=true
+    State->>Service: 调用toggleTodoStatusFromAPI<br>{todoId, completed: !currentCompleted}
+    Service->>Backend: 发送PATCH请求到/todos/{todoId}
+    Backend-->>Service: 返回更新后的Todo数据
+    Service-->>State: 返回ToggleTodoStatusResult
+    State->>State: 分发fulfilled action<br>更新store中的todo状态<br>显示成功Toast
+    State-->>View: 更新后的sections数据
+    View->>View: 重新渲染Todo项<br>显示新的完成状态
+```
+
+### 5.5 删除Todo场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant View as 展示层<br>(TodoItem)
+    participant State as 状态层<br>(todosThunks/todosSlice)
+    participant Service as 服务层<br>(todosService)
+    participant Backend as 后端服务
+
+    Note over View,Backend: 用户点击Delete按钮
+    View->>State: 调用deleteTodoAsync(todoId)
+    State->>State: 分发pending action<br>设置loading=true
+    State->>Service: 调用deleteTodoFromAPI<br>{todoId}
+    Service->>Backend: 发送DELETE请求到/todos/{todoId}
+    Backend-->>Service: 返回删除结果
+    Service-->>State: 返回DeleteTodoResult
+    State->>State: 分发fulfilled action<br>从store中移除todo<br>显示成功Toast
+    State-->>View: 更新后的sections数据
+    View->>View: 重新渲染列表<br>移除已删除的Todo项
+```
+
+### 5.6 添加Todo场景
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant View as 展示层<br>(AddTodoContainer)
+    participant State as 状态层<br>(todosThunks/todosSlice)
+    participant Service as 服务层<br>(todosService)
+    participant Backend as 后端服务
+
+    Note over View,Backend: 用户填写Todo信息并点击添加
+    View->>State: 调用addTodoAsync<br>{title, username, completed}
+    State->>State: 分发pending action<br>设置loading=true
+    State->>Service: 调用addTodoFromAPI<br>{title, username, completed}
+    Service->>Backend: 发送POST请求到/todos
+    Backend-->>Service: 返回新创建的Todo数据
+    Service-->>State: 返回AddTodoResult
+    State->>State: 分发fulfilled action<br>将新todo添加到对应section<br>显示成功Toast
+    State-->>View: 更新后的sections数据
+    View->>View: 重新渲染列表<br>显示新添加的Todo项
 ```
