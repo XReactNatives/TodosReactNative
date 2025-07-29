@@ -28,7 +28,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
     };
 
     const handleToggleDone = () => {
-        dispatch(toggleTodoStatusAsync(todo.id));
+        dispatch(toggleTodoStatusAsync({ 
+            todoId: todo.id, 
+            currentCompleted: todo.completed 
+        }));
     };
 
     const buttonTitle = isDone ? "Undo" : "Done";

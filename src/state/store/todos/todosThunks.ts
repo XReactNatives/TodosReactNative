@@ -36,29 +36,18 @@ export const fetchTodosWithSectionsAsync = createAsyncThunk<
 // 异步 thunk：切换待办事项状态
 export const toggleTodoStatusAsync = createAsyncThunk<
     any, // ToggleTodoStatusResult
-    number, // todoId
+    { todoId: number; currentCompleted: boolean }, // 修改：传递对象参数
     {
-        state: RootState;
         rejectValue: ApiError;
     }
 >(
     "todos/toggleTodoStatus",
-    async (todoId, { getState, rejectWithValue }) => {
+    async ({ todoId, currentCompleted }, { rejectWithValue }) => {
         try {
-            // 获取当前todo状态
-            const state = getState();
-            const todo = state.todos.sections
-                .flatMap(section => section.data)
-                .find(t => t.id === todoId);
-            
-            if (!todo) {
-                throw new Error("Todo not found");
-            }
-
-            // 调用API
+            // 直接使用传入的参数，无需查找state
             const result = await toggleTodoStatusFromAPI({
                 todoId,
-                completed: !todo.completed
+                completed: !currentCompleted
             });
 
             // 成功提示 - 使用Toast
