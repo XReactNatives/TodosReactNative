@@ -33,18 +33,18 @@ const AddTodoContainer: React.FC<AddTodoProps> = ({navigation}) => {
         if (!username.trim() || !title.trim()) {
             return; // 简单的表单验证
         }
-        
-        // 使用异步thunk添加todo
+
+        // 使用异步thunk添加todo，传递用户名
         dispatch(addTodoAsync({
             title: title.trim(),
-            userId: 1, // 暂时使用固定userId，后续可以改进
-            completed: false
+            username: username.trim(), // 修改：传递用户名
+            completed: false,
         }));
-        
+
         // 清空输入框
         setUsername("");
         setTitle("");
-        
+
         // 返回上一页
         navigation.goBack();
     };
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
     usernameInput: {borderBottomWidth: 1, marginBottom: 20},
 });
 
-export default AddTodoContainer; 
+export default AddTodoContainer;

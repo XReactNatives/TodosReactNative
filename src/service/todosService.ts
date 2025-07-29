@@ -58,7 +58,7 @@ export const deleteTodoFromAPI = async (
 
 /**
  * 添加待办事项
- * @param params - 请求参数，包含 title, completed
+ * @param params - 请求参数，包含 title, username, completed
  * @returns Promise<AddTodoResult> - 返回添加结果
  * @throws ApiError - 网络错误或服务器错误
  */

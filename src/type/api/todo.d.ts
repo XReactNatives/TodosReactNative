@@ -38,11 +38,11 @@ export type DeleteTodoResult = {
 // 新增：addTodo相关的类型定义
 export type AddTodoParams = {
     title: string;
-    userId: number;
+    username: string; // 修改：传递用户名而不是userId
     completed?: boolean;
 };
 
 export type AddTodoResult = {
     success: boolean;
-    todo: Todo;
+    todo: Todo & { username: string }; // 修改：确保返回的todo包含用户名
 }; 

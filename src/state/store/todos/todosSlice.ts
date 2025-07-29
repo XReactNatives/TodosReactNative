@@ -93,6 +93,13 @@ const todosSlice = createSlice({
             .addCase(addTodoAsync.fulfilled, (state, { payload }) => {
                 // 将新todo添加到对应的section中
                 const newTodo = payload.todo;
+                
+                // 确保newTodo包含username字段
+                if (!newTodo.username) {
+                    console.warn('New todo missing username field');
+                    return;
+                }
+                
                 const sectionExists = state.sections.some(
                     (section) => section.title === newTodo.username
                 );

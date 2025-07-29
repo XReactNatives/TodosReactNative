@@ -157,18 +157,48 @@ export function makeServer({environment = 'development'} = {}) {
       this.post(
         todosApiUrl,
         (schema, request) => {
-          const { title, userId, completed = false } = JSON.parse(request.requestBody);
+          const { title, username, completed = false } = JSON.parse(request.requestBody);
           
-          // 创建新todo
+          // 查找或创建用户
+          let user = schema.users.findBy({ username });
+          if (!user) {
+            // 创建新用户
+            user = schema.users.create({
+              id: String(schema.users.all().models.length + 1),
+              name: username,
+              username: username,
+              email: `${username}@example.com`,
+              address: {
+                street: 'Unknown',
+                suite: 'Unknown',
+                city: 'Unknown',
+                zipcode: '00000',
+                geo: {lat: '0', lng: '0'},
+              },
+              phone: '000-000-0000',
+              website: 'example.com',
+              company: {
+                name: 'Unknown',
+                catchPhrase: 'Unknown',
+                bs: 'Unknown',
+              },
+            });
+          }
+          
+          // 创建新todo，使用用户的id
           const newTodo = schema.todos.create({
             title,
-            userId,
+            userId: Number(user.id),
             completed
           });
 
+          // 返回包含用户名的完整数据
           return {
             success: true,
-            todo: newTodo.attrs
+            todo: {
+              ...newTodo.attrs,
+              username: user.username // 添加用户名信息
+            }
           };
         },
         { timing: 500 } // 模拟网络延迟
