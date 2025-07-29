@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import type { RootState } from '../rootReducer.ts';
-import { FilterType, filterPredicate } from "../../../type/ui/filter";
+import { FilterType, filterPredicate } from "../../../type/state/filter";
 
 //Tips：状态层-Selectors
 //定义：
