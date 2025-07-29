@@ -492,30 +492,6 @@ export interface Section {
 }
 ```
 
-`src/type/state/user.d.ts`
-
-```typescript
-// UI展示用的User类型，只包含展示必要的字段
-export type UserForUI = {
-    id: number;
-    username: string;
-    name: string;
-}; 
-```
-
-`src/type/state/filter.ts`
-
-```typescript
-export const FilterTypes = ["All", "Done", "UnDone"] as const;
-export type FilterType = typeof FilterTypes[number];
-
-export const filterPredicate: Record<FilterType, (completed: boolean) => boolean> = {
-  All: () => true,
-  Done: (c) => c,
-  UnDone: (c) => !c,
-}; 
-```
-
 #### Thunks（异步指令）
 
 `src/state/store/todos/todosThunks.ts`
