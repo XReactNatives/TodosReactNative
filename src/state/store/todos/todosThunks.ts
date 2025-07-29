@@ -9,38 +9,12 @@
 // • 配合 createAsyncThunk 自动生成 Action Type，减少样板；
 // • 完整的类型推断与统一错误处理。
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { RootState } from "../rootReducer";
 import type { Section } from "../../../type/ui";
-import type { UserForUI } from "../../../type/ui/user";
 import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
-import { fetchUsersFromAPI } from "../../../service/usersService.ts";
 import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI } from "../../../service/todosService.ts";
 import type { ToggleTodoStatusError, DeleteTodoError, AddTodoError, AddTodoParams } from "../../../type/api";
-import type { User } from "../../../type/api/user";
-import type { RootState } from "../rootReducer.ts";
-import { showSuccessToast, showErrorToast } from "../../../utils/toast";
-
-// 数据转换函数：将 API 层的 User 转换为 UI 层的 UserForUI
-const transformUserToUI = (user: User): UserForUI => ({
-    id: user.id,
-    username: user.username,
-    name: user.name,
-});
-
-// 异步获取用户列表（页面级）
-export const fetchUsersAsync = createAsyncThunk<
-  UserForUI[],
-  void,
-  { rejectValue: string }
->("users/fetch", async (_, { rejectWithValue }) => {
-  try {
-    const users = await fetchUsersFromAPI();
-    // 转换为 UI 层类型
-    return users.map(transformUserToUI);
-  } catch (err) {
-    if (err instanceof Error) return rejectWithValue(err.message);
-    return rejectWithValue("Unknown error");
-  }
-});
+import { showSuccessToast, showErrorToast } from "../../../utils/toast.ts";
 
 // 异步 thunk：获取 todos 并按用户名分组（简化版本）
 export const fetchTodosWithSectionsAsync = createAsyncThunk<
@@ -50,26 +24,6 @@ export const fetchTodosWithSectionsAsync = createAsyncThunk<
 >("todos/fetchTodosWithSections", async (_, { rejectWithValue }) => {
     try {
         return await getTodosWithSections();
-    } catch (err) {
-        if (err instanceof Error) {
-            return rejectWithValue(err.message);
-        }
-        return rejectWithValue("Unknown error occurred");
-    }
-});
-
-// 异步 thunk：获取 todos 并按用户名分组
-export const fetchTodosAsync = createAsyncThunk<
-    Section[],
-    void,
-    { state: RootState; rejectValue: string }
->("todos/fetchTodos", async (_, { rejectWithValue, getState }) => {
-    try {
-        const usersCache = getState().todos.users;
-        if (usersCache.length === 0) {
-            return rejectWithValue("Users not loaded");
-        }
-        return await getTodosWithSections(usersCache);
     } catch (err) {
         if (err instanceof Error) {
             return rejectWithValue(err.message);
