@@ -11,6 +11,21 @@ interface TodoItemProps {
     todo: TodoForUI;
 }
 
+// Tips：展示层 - Component（展示组件）
+// 定义：负责单个Todo项渲染和交互的展示组件，直接订阅Redux状态。
+// 职责：
+// 1. 根据props渲染单个Todo项的UI界面
+// 2. 处理Todo项的交互事件（切换状态、删除）
+// 3. 管理Todo项的视觉状态（完成/未完成样式）
+// 4. 分发Redux actions处理用户操作
+// 5. 不处理业务逻辑，只关注单个Todo项的展示和交互
+// 优势：
+// • 组件职责单一，只处理单个Todo项的渲染逻辑
+// • 直接分发Redux actions，减少props传递
+// • 可在多个列表组件中复用
+// • 便于独立测试，提高代码质量
+// • 交互处理清晰，便于调试和维护
+
 // Tips：展示层 - Component
 // 定义：纯展示组件，只接收 props，不直接访问 Redux。
 // 职责：

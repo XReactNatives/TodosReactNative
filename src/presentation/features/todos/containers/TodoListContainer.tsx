@@ -9,6 +9,21 @@ import StatusFilter from "../components/StatusFilter";
 import TodoList from "../components/TodoList";
 import TodoActions from "../components/TodoActions";
 
+// Tips：展示层 - Container（容器组件）
+// 定义：负责连接Redux和Component的容器组件，管理UI状态和组件组合。
+// 职责：
+// 1. 组合和布局子组件，处理组件间的协调
+// 2. 管理UI状态（如filter状态），通过props传递给子组件
+// 3. 处理全局主题和导航等跨组件功能
+// 4. 负责数据初始化，触发异步数据加载
+// 5. 订阅必要的Redux状态，但不直接处理业务逻辑
+// 优势：
+// • 将UI状态与业务状态分离，职责清晰
+// • 子组件可复用，减少重复代码
+// • 便于独立测试，提高代码质量
+// • 组件间耦合度低，修改影响范围小
+// • 状态管理清晰，便于调试和维护
+
 /**
  * Tips：组件拆分原则和思路 - TodoListContainer
  *
