@@ -1,10 +1,24 @@
 # React/React Native 组件拆分与状态管理最佳实践
 
 ## 目录
-- [组件/状态图](#组件/状态图)
-- [拆分/存储原则](#拆分/存储原则)
-- [拆分案例代码](#拆分案例代码)
-- [反例分析](#反例分析)
+## 目录
+- [1. 组件/状态图](#1-组件状态图)
+- [2. 拆分/存储原则](#2-拆分存储原则)
+  - [2.1 单一职责原则](#21-单一职责原则)
+  - [2.2 UI组件与容器组件分离](#22-ui组件与容器组件分离)
+  - [2.3 状态提升与下沉](#23-状态提升与下沉)
+  - [2.4 复用性优先](#24-复用性优先)
+- [3. 案例代码](#3-案例代码)
+  - [3.1 单一职责原则](#31-单一职责原则)
+  - [3.2 UI组件与容器组件分离](#32-ui组件与容器组件分离)
+  - [3.3 状态提升与下沉](#33-状态提升与下沉)
+  - [3.4 复用性优先](#34-复用性优先)
+- [4. 反例分析](#4-反例分析)
+  - [4.1 组件职责混乱](#41-组件职责混乱)
+  - [4.2 过度传递props](#42-过度传递props)
+  - [4.3 状态管理混乱](#43-状态管理混乱)
+- [5. 总结](#5-总结)
+
 
 
 ## 1、组件/状态图
@@ -404,6 +418,227 @@ export const selectFilterCount = (
     return list.filter(t => filterPredicate[filter](t.completed)).length;
 };
 ```
+## 4、反例分析
+
+### 4.1、反例1：组件职责混乱
+
+**❌ 错误做法：混合了多个职责的组件**
+
+```typescript
+// 反例：TodoManager 组件 - 职责混乱
+const TodoManager: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const [filter, setFilter] = useState<FilterType>("All");
+    const [username, setUsername] = useState("");
+    const [title, setTitle] = useState("");
+    
+    const sections = useAppSelector(state => selectFilteredSections(state, filter));
+    const loading = useAppSelector(selectLoading);
+    
+    // 混合了列表展示、过滤、添加等多个职责
+    return (
+        <View>
+            {/* 标题 */}
+            <Text>Todo List</Text>
+            
+            {/* 过滤功能 */}
+            <View>
+                {FilterTypes.map(type => (
+                    <TouchableOpacity onPress={() => setFilter(type)}>
+                        <Text>{type}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+            
+            {/* 列表展示 */}
+            {loading ? (
+                <ActivityIndicator />
+            ) : (
+                <FlatList
+                    data={sections.flatMap(s => s.data)}
+                    renderItem={({ item }) => (
+                        <View>
+                            <Text>{item.title}</Text>
+                            <TouchableOpacity onPress={() => dispatch(deleteTodoAsync(item.id))}>
+                                <Text>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                />
+            )}
+            
+            {/* 添加功能 */}
+            <TextInput
+                placeholder="Username"
+                value={username}
+                onChangeText={setUsername}
+            />
+            <TextInput
+                placeholder="Title"
+                value={title}
+                onChangeText={setTitle}
+            />
+            <TouchableOpacity onPress={() => {
+                dispatch(addTodoAsync({ title, username, completed: false }));
+                setTitle("");
+                setUsername("");
+            }}>
+                <Text>Add Todo</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
+```
+
+**缺点：**
+- 组件职责混乱，难以维护
+- 代码冗长，可读性差
+- 难以复用，耦合度高
+- 测试困难，需要测试多个功能
+
+### 反例2：过度传递props
+
+**❌ 错误做法：通过props层层传递状态**
+
+```typescript
+// 反例：通过props传递状态
+interface TodoListProps {
+    todos: TodoForUI[];
+    onToggleTodo: (id: number) => void;
+    onDeleteTodo: (id: number) => void;
+    onFilterChange: (filter: FilterType) => void;
+    filter: FilterType;
+    loading: boolean;
+    error: string | null;
+}
+
+const TodoList: React.FC<TodoListProps> = ({ 
+    todos, 
+    onToggleTodo, 
+    onDeleteTodo, 
+    onFilterChange, 
+    filter, 
+    loading, 
+    error 
+}) => {
+    return (
+        <View>
+            <StatusFilter 
+                filter={filter} 
+                onFilterChange={onFilterChange} 
+            />
+            {loading && <ActivityIndicator />}
+            {error && <Text>{error}</Text>}
+            {todos.map(todo => (
+                <TodoItem 
+                    todo={todo}
+                    onToggle={onToggleTodo}
+                    onDelete={onDeleteTodo}
+                />
+            ))}
+        </View>
+    );
+};
+
+// 父组件需要管理所有状态
+const TodoListContainer: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const [filter, setFilter] = useState<FilterType>("All");
+    const todos = useAppSelector(state => selectFilteredSections(state, filter));
+    const loading = useAppSelector(selectLoading);
+    const error = useAppSelector(selectError);
+    
+    const handleToggleTodo = (id: number) => {
+        dispatch(toggleTodoStatusAsync({ todoId: id, currentCompleted: false }));
+    };
+    
+    const handleDeleteTodo = (id: number) => {
+        dispatch(deleteTodoAsync(id));
+    };
+    
+    return (
+        <TodoList
+            todos={todos}
+            onToggleTodo={handleToggleTodo}
+            onDeleteTodo={handleDeleteTodo}
+            onFilterChange={setFilter}
+            filter={filter}
+            loading={loading}
+            error={error}
+        />
+    );
+};
+```
+
+**缺点：**
+- props传递链过长，难以维护
+- 父组件承担过多责任
+- 组件耦合度高，难以复用
+- 状态变更影响范围大
+
+### 反例3：状态管理混乱
+
+**❌ 错误做法：状态管理不清晰**
+
+```typescript
+// 反例：状态管理混乱
+const TodoApp: React.FC = () => {
+    // 混合了全局状态和本地状态
+    const [todos, setTodos] = useState<TodoForUI[]>([]);
+    const [filter, setFilter] = useState<FilterType>("All");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [username, setUsername] = useState("");
+    const [title, setTitle] = useState("");
+    
+    // 业务逻辑和UI逻辑混合
+    const fetchTodos = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/api/todos');
+            const data = await response.json();
+            setTodos(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const addTodo = async () => {
+        if (!title.trim() || !username.trim()) return;
+        
+        setLoading(true);
+        try {
+            const response = await fetch('/api/todos', {
+                method: 'POST',
+                body: JSON.stringify({ title, username, completed: false })
+            });
+            const newTodo = await response.json();
+            setTodos(prev => [...prev, newTodo]);
+            setTitle("");
+            setUsername("");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // 组件逻辑复杂，难以维护
+    return (
+        <View>
+            {/* 复杂的组件逻辑 */}
+        </View>
+    );
+};
+```
+
+**缺点：**
+- 状态管理混乱，难以追踪
+- 业务逻辑和UI逻辑混合
+- 组件过于复杂，难以测试
+- 状态更新容易出错
 
 ## 总结
 
