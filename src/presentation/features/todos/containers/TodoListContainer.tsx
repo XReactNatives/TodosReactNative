@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "../../../../state/store/hooks";
 import { fetchTodosWithSectionsAsync } from "../../../../state/store/todos/todosThunks";
@@ -67,15 +67,28 @@ import TodoActions from "../components/TodoActions";
  * • 状态管理清晰，便于调试和维护
  */
 const TodoListContainer: React.FC = () => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`🏠 TodoListContainer 重新渲染`);
+
     const dispatch = useAppDispatch();
 
     // UI状态：在容器组件中管理
     const [filter, setFilter] = useState<FilterType>("All");
 
-    // 初始化逻辑：确保数据依赖关系正确
-    useEffect(() => {
+    // 使用 useCallback 稳定 dispatch 引用
+    const fetchTodos = useCallback(() => {
         dispatch(fetchTodosWithSectionsAsync());
     }, [dispatch]);
+
+    // 使用 useCallback 优化 filter 变化回调
+    const handleFilterChange = useCallback((newFilter: FilterType) => {
+        setFilter(newFilter);
+    }, []);
+
+    // 初始化逻辑：确保数据依赖关系正确
+    useEffect(() => {
+        fetchTodos();
+    }, [fetchTodos]);
 
     return (
         <ThemeConsumer>
@@ -89,7 +102,7 @@ const TodoListContainer: React.FC = () => {
                     {/* 状态过滤区域 */}
                     <StatusFilter
                         filter={filter}
-                        onFilterChange={setFilter}
+                        onFilterChange={handleFilterChange}
                         titleColor={titleColor}
                     />
 

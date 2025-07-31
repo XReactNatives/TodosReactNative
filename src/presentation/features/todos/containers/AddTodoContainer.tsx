@@ -16,6 +16,9 @@ interface AddTodoProps {
 }
 
 const AddTodoContainer: React.FC<AddTodoProps> = ({navigation}) => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`➕ AddTodoContainer 重新渲染`);
+    
     const dispatch: AppDispatch = useDispatch();
 
     //Tip：局部状态，AddTodo组件内部输入框状态，使用useState保存

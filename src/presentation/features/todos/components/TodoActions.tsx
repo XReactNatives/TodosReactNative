@@ -42,12 +42,15 @@ import { RouteConfig } from "../../../../configs/routeConfig";
  * • 便于独立测试，提高代码质量
  * • 组件间耦合度低，修改影响范围小
  */
-const TodoActions: React.FC = () => {
+const TodoActions: React.FC = React.memo(() => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`🎯 TodoActions 重新渲染`);
+    
     const navigation = useNavigation<NavigationProp<any>>();
 
-    const handleAddTodo = () => {
+    const handleAddTodo = React.useCallback(() => {
         navigation.navigate(RouteConfig.ADD_TODO);
-    };
+    }, [navigation]);
 
     return (
         <View style={styles.container}>
@@ -58,7 +61,7 @@ const TodoActions: React.FC = () => {
             />
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {

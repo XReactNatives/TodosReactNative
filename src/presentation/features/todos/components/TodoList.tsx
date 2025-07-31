@@ -65,6 +65,9 @@ interface TodoListProps {
  * • 状态处理清晰，便于调试和维护
  */
 const TodoList: React.FC<TodoListProps> = ({ filter }) => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`📋 TodoList 重新渲染: filter=${filter}`);
+    
     const dispatch = useAppDispatch();
 
     // 直接订阅Redux业务状态

@@ -39,12 +39,30 @@ export const selectError = createSelector(
 );
 
 // 新增选择器：根据过滤器获取sections
-export const selectFilteredSections = (state: RootState, filter: FilterType) => {
+export const selectFilteredSections = createSelector(
+  [selectSections, (state: RootState, filter: FilterType) => filter],
+  (sections, filter) => {
+    // 添加计算日志，用于测试缓存优化
+    console.log(`🔄 selectFilteredSections 重新计算开始:`);
+    console.log(`   - 过滤器: ${filter}`);
+    console.log(`   - 时间戳: ${new Date().toLocaleTimeString()}`);
+    console.log(`   - 输入数据: ${sections.length} 个分组`);
+    
     const pred = filterPredicate[filter];
-    return selectSections(state)
-        .map(section => ({ ...section, data: section.data.filter(todo => pred(todo.completed)) }))
-        .filter(section => section.data.length > 0 || filter === "All");
-};
+    const result = sections
+      .map(section => ({
+        ...section,
+        data: section.data.filter(todo => pred(todo.completed))
+      }))
+      .filter(section => section.data.length > 0 || filter === "All");
+    
+    console.log(`✅ selectFilteredSections 计算完成:`);
+    console.log(`   - 结果: ${result.length} 个分组`);
+    console.log(`   - 总项目数: ${result.reduce((sum, section) => sum + section.data.length, 0)} 个`);
+    
+    return result;
+  }
+);
 
 export const selectFilterCount = (
     state: RootState,

@@ -47,20 +47,28 @@ interface StatusFilterProps {
  * • 便于独立测试，提高代码质量
  * • 组件间耦合度低，修改影响范围小
  */
-const StatusFilter: React.FC<StatusFilterProps> = ({
+const StatusFilter: React.FC<StatusFilterProps> = React.memo(({
     filter,
     onFilterChange,
     titleColor,
 }) => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`🔍 StatusFilter 重新渲染: filter=${filter}, titleColor=${titleColor}`);
+    
     // 直接订阅currentCount
     const currentCount = useAppSelector(state => selectFilterCount(state, filter));
+
+    // 使用 useCallback 优化事件处理函数
+    const handleFilterChange = React.useCallback((newFilter: FilterType) => {
+        onFilterChange(newFilter);
+    }, [onFilterChange]);
 
     return (
         <View style={styles.filterContainer}>
             {FilterTypes.map((type: FilterType) => (
                 <TouchableOpacity
                     key={type}
-                    onPress={() => onFilterChange(type)}
+                    onPress={() => handleFilterChange(type)}
                     style={[styles.filterButton, filter === type && { backgroundColor: titleColor }]}
                 >
                     <Text style={[styles.filterButtonText, filter === type && { color: "white" }]}>
@@ -73,7 +81,7 @@ const StatusFilter: React.FC<StatusFilterProps> = ({
             ))}
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     filterContainer: {

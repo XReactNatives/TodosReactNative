@@ -25,20 +25,37 @@ interface TodoItemProps {
 // • 可在多个列表组件中复用
 // • 便于独立测试，提高代码质量
 // • 交互处理清晰，便于调试和维护
-const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
+
+// Tips：React.memo 优化
+// 定义：React.memo 是一个高阶组件，用于记忆化函数组件。
+// 职责：
+// 1. 当 props 没有变化时，跳过重新渲染
+// 2. 通过浅比较（shallow comparison）检测 props 变化
+// 3. 提供自定义比较函数以支持深度比较
+// 优势：
+// • 避免不必要的重新渲染，提高性能
+// • 特别适用于列表项组件，减少渲染开销
+// • 当父组件重新渲染时，子组件不会重复渲染
+// • 保持组件的纯函数特性，便于测试和调试
+
+const TodoItem: React.FC<TodoItemProps> = React.memo(({ todo }) => {
+    // 添加渲染日志，用于检测过渡渲染问题
+    console.log(`🔄 TodoItem 重新渲染: ID=${todo.id}, 标题="${todo.title}", 完成状态=${todo.completed}`);
+    
     const dispatch = useAppDispatch();
     const isDone = todo.completed;
 
-    const handleDelete = () => {
+    // 使用 useCallback 优化事件处理函数，避免重复创建
+    const handleDelete = React.useCallback(() => {
         dispatch(deleteTodoAsync(todo.id));
-    };
+    }, [dispatch, todo.id]);
 
-    const handleToggleDone = () => {
+    const handleToggleDone = React.useCallback(() => {
         dispatch(toggleTodoStatusAsync({ 
             todoId: todo.id, 
             currentCompleted: todo.completed 
         }));
-    };
+    }, [dispatch, todo.id, todo.completed]);
 
     const buttonTitle = isDone ? "Undo" : "Done";
 
@@ -57,7 +74,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
             </View>
         </View>
     );
-};
+});
 
 //Tip：局部样式，组件内单独使用的方式通过StyleSheet定义在组件内部
 const styles = StyleSheet.create({
