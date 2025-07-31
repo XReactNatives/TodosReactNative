@@ -509,7 +509,6 @@ export const selectFilterCount = (
 
 **合理状态管理、过渡渲染优化后效果**
 ```
-合理的状态管理
 + useMemo-props变化渲染、useCallback-依赖变化生成callback
 
  //初次加载
