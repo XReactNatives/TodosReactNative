@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "../../../../state/store/hooks";
-import { fetchTodosWithSectionsAsync } from "../../../../state/store/todos/todosThunks";
+import { fetchTodosAndUsersNormalizedAsync } from "../../../../state/store/todos/todosThunks";
 import { FilterType } from "../../../../type/state/filter";
 import { ThemeConsumer } from "../../../../state/context/ThemeProvider";
 import { styles as commonStyles } from "../../../styles/styles";
@@ -77,7 +77,7 @@ const TodoListContainer: React.FC = () => {
 
     // 使用 useCallback 稳定 dispatch 引用
     const fetchTodos = useCallback(() => {
-        dispatch(fetchTodosWithSectionsAsync());
+        dispatch(fetchTodosAndUsersNormalizedAsync());
     }, [dispatch]);
 
     // 使用 useCallback 优化 filter 变化回调

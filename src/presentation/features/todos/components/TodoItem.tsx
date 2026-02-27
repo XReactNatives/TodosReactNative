@@ -1,9 +1,13 @@
 //Todos列表Item组件
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NavigationProp } from "@react-navigation/native";
+import type { RootStackParamList } from "../../../../type/navigation";
 import { useAppDispatch } from "../../../../state/store/hooks";
 import { toggleTodoStatusAsync, deleteTodoAsync } from "../../../../state/store/todos/todosThunks";
 import type { TodoForUI } from "../../../../type/ui";
+import { RouteConfig } from "../../../../configs/routeConfig";
 import TodoButton from "../../../components/TodoButton";
 
 // 类型定义：TodoItem组件的Props
@@ -43,6 +47,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({ todo }) => {
     console.log(`🔄 TodoItem 重新渲染: ID=${todo.id}, 标题="${todo.title}", 完成状态=${todo.completed}`);
     
     const dispatch = useAppDispatch();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isDone = todo.completed;
 
     // 使用 useCallback 优化事件处理函数，避免重复创建
@@ -57,13 +62,19 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({ todo }) => {
         }));
     }, [dispatch, todo.id, todo.completed]);
 
+    const handlePressTitle = React.useCallback(() => {
+        navigation.navigate(RouteConfig.TODO_DETAIL, { todoId: todo.id });
+    }, [navigation, todo.id]);
+
     const buttonTitle = isDone ? "Undo" : "Done";
 
     return (
         <View style={styles.itemContainer}>
-            <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
-                {todo.title}
-            </Text>
+            <TouchableOpacity onPress={handlePressTitle} style={styles.titleContainer}>
+                <Text style={[styles.itemText, isDone && styles.strikeThrough]}>
+                    {todo.title}
+                </Text>
+            </TouchableOpacity>
             <View style={styles.buttonContainer}>
                 <TodoButton
                     title={buttonTitle}
@@ -83,9 +94,11 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         alignItems: "center",
     },
-    itemText: {
+    titleContainer: {
         flex: 1,
         marginRight: 6,
+    },
+    itemText: {
         fontSize: 16,
         color: "#000",
     },

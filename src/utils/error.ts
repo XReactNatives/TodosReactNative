@@ -11,7 +11,7 @@ import type { AppError, ErrorCode } from '../type/error';
 export const createAppError = (
     code: ErrorCode,
     message: string,
-    details?: any
+    details?: unknown
 ): AppError => ({
     code,
     message,
@@ -24,26 +24,22 @@ export const createAppError = (
  * @param error 原始错误
  * @returns AppError
  */
-export const handleApiError = (error: any): AppError => {
-    // 处理网络错误
-    if (error?.status) {
+export const handleApiError = (error: unknown): AppError => {
+    const err = error as { status?: number; message?: string };
+    if (err?.status) {
         return createAppError(
             'NETWORK_ERROR',
-            `HTTP ${error.status}: ${error.message}`,
-            { status: error.status }
+            `HTTP ${err.status}: ${err.message ?? ''}`,
+            { status: err.status }
         );
     }
-
-    // 处理业务错误
-    if (error?.message) {
+    if (err?.message) {
         return createAppError(
             'BUSINESS_ERROR',
-            error.message,
+            err.message,
             { originalError: error }
         );
     }
-
-    // 处理未知错误
     return createAppError(
         'UNKNOWN_ERROR',
         'An unknown error occurred',

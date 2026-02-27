@@ -3,8 +3,9 @@ import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { SectionList, TouchableOpacity, Image } from "react-native";
 import { useAppDispatch, useAppSelector } from "../../../../state/store/hooks";
 import { toggleSection } from "../../../../state/store/todos/todosSlice";
-import { selectFilteredSections, selectLoading, selectError } from "../../../../state/store/todos/todosSelectors";
+import { selectFilteredSections, selectListLoading, selectListError } from "../../../../state/store/todos/todosSelectors";
 import type { FilterType } from "../../../../type/state/filter";
+import type { Section, TodoForUI } from "../../../../type/ui";
 import TodoItem from "./TodoItem";
 
 // 类型定义：TodoList组件的Props
@@ -72,8 +73,8 @@ const TodoList: React.FC<TodoListProps> = ({ filter }) => {
 
     // 直接订阅Redux业务状态
     const sections = useAppSelector(state => selectFilteredSections(state, filter));
-    const loading = useAppSelector(selectLoading);
-    const error = useAppSelector(selectError);
+    const loading = useAppSelector(selectListLoading);
+    const error = useAppSelector(selectListError);
 
     // 加载状态处理
     if (loading) {
@@ -82,12 +83,12 @@ const TodoList: React.FC<TodoListProps> = ({ filter }) => {
 
     // 错误状态处理
     if (error) {
-        return <Text style={styles.errorText}>Error: {error}</Text>;
+        return <Text style={styles.errorText}>Error: {error.message}</Text>;
     }
 
     // 正常状态处理
     return (
-        <SectionList
+        <SectionList<TodoForUI, Section>
             sections={sections}
             keyExtractor={(item) => item.id.toString()}
             renderSectionHeader={({ section: { title, expanded } }) => (

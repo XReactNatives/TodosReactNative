@@ -6,11 +6,6 @@ export type Todo = {
     completed: boolean;
 }; 
 
-// API 请求参数类型定义
-export type FetchTodosParams = {
-    userId?: number;
-};
-
 // API 响应结果类型定义
 export type FetchTodosResult = Todo[];
 
@@ -45,4 +40,11 @@ export type AddTodoParams = {
 export type AddTodoResult = {
     success: boolean;
     todo: Todo & { username: string }; // 修改：确保返回的todo包含用户名
-}; 
+};
+
+// 新增：fetchTodoDetail相关的类型定义
+export type FetchTodoDetailParams = {
+    todoId: number;
+};
+
+export type FetchTodoDetailResult = Todo & { username: string }; 

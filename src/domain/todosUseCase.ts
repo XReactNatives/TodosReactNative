@@ -13,11 +13,11 @@
 // • 业务规则验证确保数据质量；
 // • 数据格式转换确保UI展示一致性。
 
-import {fetchTodosFromAPI} from "../service/todosService";
-import {fetchUsersFromAPI} from "../service/usersService";
-import type {Section, TodoForUI} from "../type/ui";
-import type {User} from "../type/api/user";
-import type {Todo} from "../type/api/todo";
+import {fetchTodosFromAPI} from '../service/todosService';
+import {fetchUsersFromAPI} from '../service/usersService';
+import type {TodoWithUsername, NormalizedTodos, NormalizedUsers, SectionsExpanded} from '../type/state/todo';
+import type {User} from '../type/api/user';
+import type {Todo} from '../type/api/todo';
 
 // 业务规则验证1：Todo标题不能为空
 const validateTodoTitle = (todo: Todo): boolean => {
@@ -34,46 +34,61 @@ const generateSectionTitle = (username: string, email: string): string => {
     return `${username} (${email})`;
 };
 
-export const getTodosWithSections = async (): Promise<Section[]> => {
-    const todos = await fetchTodosFromAPI();
-    const users = await fetchUsersFromAPI();
-    
+export const getTodosAndUsersNormalized = async (): Promise<{
+    todos: NormalizedTodos;
+    users: NormalizedUsers;
+    ids: number[];
+    sectionsExpanded: SectionsExpanded;
+}> => {
+    const todosFromAPI = await fetchTodosFromAPI();
+    const usersFromAPI = await fetchUsersFromAPI();
+
     // 应用业务规则验证：过滤无效数据
-    const validTodos = todos.filter(todo => {
+    const validTodos = todosFromAPI.filter(todo => {
         const hasValidTitle = validateTodoTitle(todo);
-        const hasValidUser = validateTodoUser(todo, users);
-        
-        // 记录被过滤的数据（可选，用于调试）
+        const hasValidUser = validateTodoUser(todo, usersFromAPI);
+
         if (!hasValidTitle) {
             console.warn(`Todo ${todo.id} has empty title, filtered out`);
         }
         if (!hasValidUser) {
             console.warn(`Todo ${todo.id} has invalid userId: ${todo.userId}, filtered out`);
         }
-        
+
         return hasValidTitle && hasValidUser;
     });
-    
-    // 业务逻辑：将有效的todos按用户名分组，并添加用户名信息
-    const grouped = validTodos.reduce((acc, todo) => {
-        const findUser = users.find((user: User) => Number(user.id) === todo.userId);
-        const username = findUser ? findUser.username : "Unknown";
-        if (!acc[username]) {
-            acc[username] = [];
-        }
-        acc[username].push({...todo, username});
-        return acc;
-    }, {} as Record<string, TodoForUI[]>);
 
-    // 业务逻辑：转换为Section结构，title包含用户名和邮箱
-    return Object.keys(grouped).map(username => {
-        const findUser = users.find((user: User) => user.username === username);
-        const email = findUser ? findUser.email : "unknown@example.com";
-        
-        return {
-            title: generateSectionTitle(username, email),
-            data: grouped[username],
-            expanded: true,
+    // 构建归一化数据结构，同时收集usernames
+    const todosNormalized: NormalizedTodos = {};
+    const ids: number[] = [];
+    const usernamesSet = new Set<string>();
+
+    validTodos.forEach(todo => {
+        const user = usersFromAPI.find(u => Number(u.id) === todo.userId);
+        const username = user ? user.username : 'Unknown';
+        const todoWithUsername: TodoWithUsername = {
+            ...todo,
+            username,
         };
+
+        todosNormalized[todo.id] = todoWithUsername;
+        ids.push(todo.id);
+        usernamesSet.add(username);
     });
+
+    const usersNormalized: NormalizedUsers = {};
+    usersFromAPI.forEach(user => {
+        usersNormalized[user.id] = user;
+    });
+
+    // 初始化sectionsExpanded（业务逻辑：生成section标题）
+    const sectionsExpanded: SectionsExpanded = {};
+    usernamesSet.forEach(username => {
+        const user = usersFromAPI.find(u => u.username === username);
+        const email = user?.email || 'unknown@example.com';
+        const sectionTitle = generateSectionTitle(username, email);
+        sectionsExpanded[sectionTitle] = true;
+    });
+
+    return { todos: todosNormalized, users: usersNormalized, ids, sectionsExpanded };
 };

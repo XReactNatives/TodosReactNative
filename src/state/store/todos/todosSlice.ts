@@ -1,18 +1,29 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { Section } from "../../../type/ui";
+import { createSlice, PayloadAction, type SerializedError } from "@reduxjs/toolkit";
 import type { AppError } from "../../../type/error";
-import { fetchTodosWithSectionsAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync } from "./todosThunks.ts";
+import type { TodoWithUsername, NormalizedTodos, NormalizedUsers, SectionsExpanded } from "../../../type/state/todo";
+import type { User } from "../../../type/api/user";
+import { fetchTodosAndUsersNormalizedAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync, fetchTodoDetailAsync } from "./todosThunks.ts";
 
 interface TodosState {
-    sections: Section[];
-    loading: boolean;
-    error: AppError | null;
+    todosById: NormalizedTodos;
+    ids: number[];
+    usersById: NormalizedUsers;
+    sectionsExpanded: SectionsExpanded;
+    listLoading: boolean;
+    listError: AppError | null;
+    detailLoading: boolean;
+    detailError: AppError | null;
 }
 
 const initialState: TodosState = {
-    sections: [],
-    loading: false,
-    error: null,
+    todosById: {} as NormalizedTodos,
+    ids: [] as number[],
+    usersById: {} as NormalizedUsers,
+    sectionsExpanded: {} as SectionsExpanded,
+    listLoading: false,
+    listError: null,
+    detailLoading: false,
+    detailError: null,
 };
 
 // Tips：状态层-Slice
@@ -28,14 +39,32 @@ const initialState: TodosState = {
 // • 状态、逻辑、Action 同文件集中，易于维护与重构；
 // • 统一的错误处理策略，提高可维护性。
 
-// 统一错误处理函数
-const handleRejectedAction = (state: TodosState, action: any) => {
-    state.loading = false;
-    state.error = action.payload || {
+interface RejectedActionLike {
+    payload?: AppError;
+    error?: SerializedError;
+}
+
+const handleListRejectedAction = (state: TodosState, action: RejectedActionLike) => {
+    state.listLoading = false;
+    state.listError = action.payload ?? {
         code: 'UNKNOWN_ERROR',
-        message: action.error.message || 'An unknown error occurred',
+        message: action.error?.message ?? 'An unknown error occurred',
         timestamp: Date.now(),
     };
+};
+
+const handleDetailRejectedAction = (state: TodosState, action: RejectedActionLike) => {
+    state.detailLoading = false;
+    state.detailError = action.payload ?? {
+        code: 'UNKNOWN_ERROR',
+        message: action.error?.message ?? 'An unknown error occurred',
+        timestamp: Date.now(),
+    };
+};
+
+// 辅助函数：生成section标题（在addTodoAsync中仍需要使用）
+const generateSectionTitle = (username: string, email: string): string => {
+    return `${username} (${email})`;
 };
 
 const todosSlice = createSlice({
@@ -43,11 +72,7 @@ const todosSlice = createSlice({
     initialState,
     reducers: {
         toggleSection: (state, { payload }: PayloadAction<string>) => {
-            state.sections = state.sections.map((section) =>
-                section.title === payload
-                    ? { ...section, expanded: !section.expanded }
-                    : section
-            );
+            state.sectionsExpanded[payload] = !state.sectionsExpanded[payload];
         },
     },
     // Tips：状态层-extraReducers
@@ -61,40 +86,41 @@ const todosSlice = createSlice({
     extraReducers: (builder) => {
         builder
             // fetchTodosWithSections async
-            .addCase(fetchTodosWithSectionsAsync.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+            .addCase(fetchTodosAndUsersNormalizedAsync.pending, (state) => {
+                state.listLoading = true;
+                state.listError = null;
             })
-            .addCase(fetchTodosWithSectionsAsync.fulfilled, (state, { payload }) => {
-                state.loading = false;
-                state.sections = payload;
+            .addCase(fetchTodosAndUsersNormalizedAsync.fulfilled, (state, { payload }) => {
+                state.listLoading = false;
+
+                // 直接赋值所有归一化数据（包括 sectionsExpanded）
+                state.todosById = payload.todos;
+                state.ids = payload.ids;
+                state.usersById = payload.users;
+                state.sectionsExpanded = payload.sectionsExpanded;
             })
-            .addCase(fetchTodosWithSectionsAsync.rejected, handleRejectedAction)
+            .addCase(fetchTodosAndUsersNormalizedAsync.rejected, handleListRejectedAction)
 
             // toggleTodoStatus async
             .addCase(toggleTodoStatusAsync.fulfilled, (state, { payload }) => {
-                state.sections = state.sections.map(section => ({
-                    ...section,
-                    data: section.data.map(todo =>
-                        todo.id === payload.todo.id
-                            ? { ...todo, completed: payload.todo.completed }
-                            : todo
-                    )
-                }));
+                // 直接更新 todosById 中的 todo，无需同步多处
+                if (state.todosById[payload.todo.id]) {
+                    state.todosById[payload.todo.id].completed = payload.todo.completed;
+                }
             })
-            .addCase(toggleTodoStatusAsync.rejected, handleRejectedAction)
+            .addCase(toggleTodoStatusAsync.rejected, handleListRejectedAction)
 
             // deleteTodo async
             .addCase(deleteTodoAsync.fulfilled, (state, { meta }) => {
                 const todoId = meta.arg;
-                state.sections = state.sections
-                    .map((section) => ({
-                        ...section,
-                        data: section.data.filter((todo) => todo.id !== todoId),
-                    }))
-                    .filter((section) => section.data.length > 0);
+
+                // 从 todosById 中删除
+                delete state.todosById[todoId];
+
+                // 从ids中移除
+                state.ids = state.ids.filter(id => id !== todoId);
             })
-            .addCase(deleteTodoAsync.rejected, handleRejectedAction)
+            .addCase(deleteTodoAsync.rejected, handleListRejectedAction)
 
             // addTodo async
             .addCase(addTodoAsync.fulfilled, (state, { payload }) => {
@@ -106,24 +132,39 @@ const todosSlice = createSlice({
                     return;
                 }
 
-                const sectionExists = state.sections.some(
-                    (section) => section.title === newTodo.username
-                );
-                if (sectionExists) {
-                    state.sections = state.sections.map((section) =>
-                        section.title === newTodo.username
-                            ? { ...section, data: [...section.data, newTodo] }
-                            : section
-                    );
-                } else {
-                    state.sections.push({
-                        title: newTodo.username,
-                        data: [newTodo],
-                        expanded: true,
-                    });
+                // 添加到 todosById 和 ids
+                state.todosById[newTodo.id] = newTodo;
+                if (!state.ids.includes(newTodo.id)) {
+                    state.ids.push(newTodo.id);
+                }
+
+                // 初始化sections展开状态
+                const user = Object.values(state.usersById).find(u => u.username === newTodo.username);
+                const email = user?.email || 'unknown@example.com';
+                const sectionTitle = generateSectionTitle(newTodo.username, email);
+                if (!(sectionTitle in state.sectionsExpanded)) {
+                    state.sectionsExpanded[sectionTitle] = true;
                 }
             })
-            .addCase(addTodoAsync.rejected, handleRejectedAction);
+            .addCase(addTodoAsync.rejected, handleListRejectedAction)
+
+            // fetchTodoDetail async
+            .addCase(fetchTodoDetailAsync.pending, (state) => {
+                state.detailLoading = true;
+                state.detailError = null;
+            })
+            .addCase(fetchTodoDetailAsync.fulfilled, (state, { payload }) => {
+                state.detailLoading = false;
+
+                // 将获取的 todo 合并到 todosById
+                state.todosById[payload.id] = payload;
+
+                // 如果todo不在ids中，添加到ids
+                if (!state.ids.includes(payload.id)) {
+                    state.ids.push(payload.id);
+                }
+            })
+            .addCase(fetchTodoDetailAsync.rejected, handleDetailRejectedAction);
     },
 });
 

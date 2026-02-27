@@ -97,7 +97,7 @@ export class Api {
      * @param options 请求选项
      * @returns Promise<T> 响应数据
      */
-    async post<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+    async post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
         const url = `${this.baseURL}${endpoint}`;
         return this.request<T>(url, {
             method: 'POST',
@@ -113,7 +113,7 @@ export class Api {
      * @param options 请求选项
      * @returns Promise<T> 响应数据
      */
-    async patch<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+    async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
         const url = `${this.baseURL}${endpoint}`;
         return this.request<T>(url, {
             method: 'PATCH',

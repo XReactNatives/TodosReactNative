@@ -12,22 +12,23 @@
 // • 统一的错误处理策略，提高可维护性。
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Section } from "../../../type/ui";
-import { getTodosWithSections } from "../../../domain/todosUseCase.ts";
-import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI } from "../../../service/todosService.ts";
-import type { AddTodoParams } from "../../../type/api";
+import type { NormalizedTodos, NormalizedUsers, SectionsExpanded } from "../../../type/state/todo";
+import { getTodosAndUsersNormalized } from "../../../domain/todosUseCase.ts";
+import { toggleTodoStatusFromAPI, deleteTodoFromAPI, addTodoFromAPI, fetchTodoDetailFromAPI } from "../../../service/todosService.ts";
+import type { AddTodoParams, ToggleTodoStatusResult, DeleteTodoResult, AddTodoResult } from "../../../type/api";
 import type { AppError } from "../../../type/error";
 import { handleApiError } from "../../../utils/error";
 import { showSuccessToast, showErrorToast } from "../../../utils/toast.ts";
+import type { TodoWithUsername } from "../../../type/state/todo";
 
-// 异步 thunk：获取 todos 并按用户名分组
-export const fetchTodosWithSectionsAsync = createAsyncThunk<
-    Section[],
+// 异步 thunk：获取 todos 归一化数据
+export const fetchTodosAndUsersNormalizedAsync = createAsyncThunk<
+    { todos: NormalizedTodos; users: NormalizedUsers; ids: number[]; sectionsExpanded: SectionsExpanded },
     void,
     { rejectValue: AppError }
->("todos/fetchTodosWithSections", async (_, { rejectWithValue }) => {
+>("todos/fetchTodosAndUsersNormalized", async (_, { rejectWithValue }) => {
     try {
-        return await getTodosWithSections();
+        return await getTodosAndUsersNormalized();
     } catch (error) {
         const appError = handleApiError(error);
         return rejectWithValue(appError);
@@ -36,7 +37,7 @@ export const fetchTodosWithSectionsAsync = createAsyncThunk<
 
 // 异步 thunk：切换待办事项状态
 export const toggleTodoStatusAsync = createAsyncThunk<
-    any, // ToggleTodoStatusResult
+    ToggleTodoStatusResult,
     { todoId: number; currentCompleted: boolean },
     { rejectValue: AppError }
 >(
@@ -62,7 +63,7 @@ export const toggleTodoStatusAsync = createAsyncThunk<
 
 // 异步 thunk：删除待办事项
 export const deleteTodoAsync = createAsyncThunk<
-    any, // DeleteTodoResult
+    DeleteTodoResult,
     number, // todoId
     { rejectValue: AppError }
 >(
@@ -85,7 +86,7 @@ export const deleteTodoAsync = createAsyncThunk<
 
 // 异步 thunk：添加待办事项
 export const addTodoAsync = createAsyncThunk<
-    any, // AddTodoResult
+    AddTodoResult,
     AddTodoParams,
     { rejectValue: AppError }
 >(
@@ -98,6 +99,23 @@ export const addTodoAsync = createAsyncThunk<
         } catch (error) {
             const appError = handleApiError(error);
             showErrorToast(`Failed to add todo: ${appError.message}`);
+            return rejectWithValue(appError);
+        }
+    }
+);
+
+// 异步 thunk：获取待办事项详情
+export const fetchTodoDetailAsync = createAsyncThunk<
+    TodoWithUsername,
+    number, // todoId
+    { rejectValue: AppError }
+>(
+    "todos/fetchTodoDetail",
+    async (todoId, { rejectWithValue }) => {
+        try {
+            return await fetchTodoDetailFromAPI({ todoId });
+        } catch (error) {
+            const appError = handleApiError(error);
             return rejectWithValue(appError);
         }
     }

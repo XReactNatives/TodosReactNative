@@ -2,9 +2,9 @@
 import React, {useState} from "react";
 import {View, TextInput, StyleSheet, Text} from "react-native";
 import {useDispatch} from "react-redux";
-import type {NavigationProp} from "@react-navigation/native";
-
-import {addTodoAsync} from "../../../../state/store/todos/todosThunks";
+import type { NavigationProp } from "@react-navigation/native";
+import type { RootStackParamList } from "../../../../type/navigation";
+import { addTodoAsync } from "../../../../state/store/todos/todosThunks";
 import {styles as commonStyles} from "../../../styles/styles";
 import type {AppDispatch} from "../../../../state/store/rootReducer";
 import TodoButton from "../../../components/TodoButton";
@@ -12,7 +12,7 @@ import {useTheme} from "../../../../state/context/ThemeProvider";
 
 // 类型定义：AddTodoContainer组件的Props
 interface AddTodoProps {
-    navigation: NavigationProp<any>;
+    navigation: NavigationProp<RootStackParamList>;
 }
 
 const AddTodoContainer: React.FC<AddTodoProps> = ({navigation}) => {

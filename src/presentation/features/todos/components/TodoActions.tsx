@@ -1,7 +1,8 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NavigationProp } from "@react-navigation/native";
+import type { NavigationProp } from "@react-navigation/native";
+import type { RootStackParamList } from "../../../../type/navigation";
 import TodoButton from "../../../components/TodoButton";
 import { RouteConfig } from "../../../../configs/routeConfig";
 
@@ -46,7 +47,7 @@ const TodoActions: React.FC = React.memo(() => {
     // 添加渲染日志，用于检测过渡渲染问题
     console.log(`🎯 TodoActions 重新渲染`);
     
-    const navigation = useNavigation<NavigationProp<any>>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     const handleAddTodo = React.useCallback(() => {
         navigation.navigate(RouteConfig.ADD_TODO);

@@ -1,4 +1,4 @@
-import { api } from "../utils/api.ts";
+import { api } from '../utils/api.ts';
 import type {
     FetchTodosResult,
     ToggleTodoStatusParams,
@@ -6,10 +6,12 @@ import type {
     DeleteTodoParams,
     DeleteTodoResult,
     AddTodoParams,
-    AddTodoResult
-} from "../type/api";
+    AddTodoResult,
+    FetchTodoDetailParams,
+    FetchTodoDetailResult,
+} from '../type/api';
 
-const todosEndpoint = "/todos";
+const todosEndpoint = '/todos';
 
 // Tips：服务层 - Service
 // 定义：直接与后端或 Mock API 交互的纯网络请求封装，不包含业务规则。
@@ -66,4 +68,17 @@ export const addTodoFromAPI = async (
     params: AddTodoParams
 ): Promise<AddTodoResult> => {
     return api.post<AddTodoResult>(todosEndpoint, params);
+};
+
+/**
+ * 获取待办事项详情
+ * @param params - 请求参数，包含 todoId
+ * @returns Promise<FetchTodoDetailResult> - 返回包含username的完整Todo数据
+ * @throws ApiError - 网络错误或服务器错误
+ */
+export const fetchTodoDetailFromAPI = async (
+    params: FetchTodoDetailParams
+): Promise<FetchTodoDetailResult> => {
+    const { todoId } = params;
+    return api.get<FetchTodoDetailResult>(`${todosEndpoint}/${todoId}`);
 };

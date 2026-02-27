@@ -1,6 +1,8 @@
 import { createSelector } from 'reselect';
 import type { RootState } from '../rootReducer.ts';
 import { FilterType, filterPredicate } from "../../../type/state/filter";
+import type { TodoWithUsername } from "../../../type/state/todo";
+import type { Section, TodoForUI } from "../../../type/ui";
 
 //Tips：状态层-Selectors
 //定义：
@@ -20,54 +22,119 @@ import { FilterType, filterPredicate } from "../../../type/state/filter";
 // 基本选择器：获取todos状态
 const selectTodosState = (state: RootState) => state.todos;
 
-// 选择器：获取todos列表
-export const selectSections = createSelector(
+// 基础selectors：归一化数据
+const selectTodosById = createSelector(
     [selectTodosState],
-    (todosState) => todosState.sections
+    (todosState) => todosState.todosById
 );
 
-// 选择器：获取加载状态
-export const selectLoading = createSelector(
+const selectTodoIds = createSelector(
     [selectTodosState],
-    (todosState) => todosState.loading
+    (todosState) => todosState.ids
 );
 
-// 选择器：获取错误信息
-export const selectError = createSelector(
+const selectUsersById = createSelector(
     [selectTodosState],
-    (todosState) => todosState.error
+    (todosState) => todosState.usersById
 );
 
-// 新增选择器：根据过滤器获取sections
+const selectSectionsExpanded = createSelector(
+    [selectTodosState],
+    (todosState) => todosState.sectionsExpanded
+);
+
+// 辅助函数：生成section标题
+const generateSectionTitle = (username: string, email: string): string => {
+    return `${username} (${email})`;
+};
+
+// 选择器：从归一化数据计算sections
+const selectSections = createSelector(
+    [selectTodosById, selectTodoIds, selectUsersById, selectSectionsExpanded],
+    (todosById, ids, usersById, sectionsExpanded): Section[] => {
+        const grouped = ids.reduce((acc, id) => {
+            const todo = todosById[id];
+            if (!todo) return acc;
+            
+            const username = todo.username;
+            if (!acc[username]) {
+                acc[username] = [];
+            }
+            acc[username].push(todo);
+            return acc;
+        }, {} as Record<string, TodoWithUsername[]>);
+        
+        // 转换为Section结构
+        return Object.keys(grouped).map(username => {
+            const user = Object.values(usersById).find(u => u.username === username);
+            const email = user?.email || 'unknown@example.com';
+            const title = generateSectionTitle(username, email);
+            
+            return {
+                title,
+                data: grouped[username].map((todo): TodoForUI => ({
+                    id: todo.id,
+                    username: todo.username,
+                    title: todo.title,
+                    completed: todo.completed,
+                })),
+                expanded: sectionsExpanded[title] ?? true,
+            };
+        });
+    }
+);
+
+// 选择器：获取列表加载状态
+export const selectListLoading = createSelector(
+    [selectTodosState],
+    (todosState) => todosState.listLoading
+);
+
+// 选择器：获取列表错误信息
+export const selectListError = createSelector(
+    [selectTodosState],
+    (todosState) => todosState.listError
+);
+
+// 选择器：根据过滤器获取sections
 export const selectFilteredSections = createSelector(
   [selectSections, (state: RootState, filter: FilterType) => filter],
   (sections, filter) => {
-    // 添加计算日志，用于测试缓存优化
-    console.log(`🔄 selectFilteredSections 重新计算开始:`);
-    console.log(`   - 过滤器: ${filter}`);
-    console.log(`   - 时间戳: ${new Date().toLocaleTimeString()}`);
-    console.log(`   - 输入数据: ${sections.length} 个分组`);
-    
     const pred = filterPredicate[filter];
-    const result = sections
+    return sections
       .map(section => ({
         ...section,
         data: section.data.filter(todo => pred(todo.completed))
       }))
       .filter(section => section.data.length > 0 || filter === "All");
-    
-    console.log(`✅ selectFilteredSections 计算完成:`);
-    console.log(`   - 结果: ${result.length} 个分组`);
-    console.log(`   - 总项目数: ${result.reduce((sum, section) => sum + section.data.length, 0)} 个`);
-    
-    return result;
   }
 );
 
-export const selectFilterCount = (
-    state: RootState,
-    filter: FilterType
-) => {
-    const list = selectSections(state).flatMap(sec => sec.data);
-    return list.filter(t => filterPredicate[filter](t.completed)).length;
-};
+export const selectFilterCount = createSelector(
+    [selectTodosById, selectTodoIds, (state: RootState, filter: FilterType) => filter],
+    (todosById, ids, filter) => {
+        const pred = filterPredicate[filter];
+        return ids.filter(id => {
+            const todo = todosById[id];
+            return todo && pred(todo.completed);
+        }).length;
+    }
+);
+
+// 选择器：获取Todo详情
+export const selectTodoDetail = createSelector(
+    [selectTodosById, (state: RootState, todoId: number) => todoId],
+    (todosById, todoId) => todosById[todoId] || null
+);
+
+// 选择器：获取详情加载状态
+export const selectDetailLoading = createSelector(
+    [selectTodosState],
+    (todosState) => todosState.detailLoading
+);
+
+// 选择器：获取详情错误信息
+export const selectDetailError = createSelector(
+    [selectTodosState],
+    (todosState) => todosState.detailError
+);

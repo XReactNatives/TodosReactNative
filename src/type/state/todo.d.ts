@@ -1,14 +1,14 @@
-// UI展示用的类型，包含username
-export type TodoForUI = {
-    id: number;
-    username: string;
-    title: string;
-    completed: boolean;
-}
+import type { Todo } from "../api/todo";
+import type { User } from "../api/user";
 
-// Section类型定义，用于UI展示的二级列表
-export interface Section {
-    title: string;
-    data: TodoForUI[];
-    expanded: boolean;
-}
+// Todo实体类型（包含username）
+export type TodoWithUsername = Todo & { username: string };
+
+// 归一化的Todos存储类型
+export type NormalizedTodos = Record<number, TodoWithUsername>;
+
+// 归一化的Users存储类型
+export type NormalizedUsers = Record<number, User>;
+
+// Sections展开状态类型
+export type SectionsExpanded = Record<string, boolean>;

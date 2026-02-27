@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck — miragejs 类型声明中 get/patch/delete/post 的 HandlerOptions 三参数与 Schema 方法签名与运行时不一致
 import {createServer, Model} from 'miragejs';
 
 import {apiConfig} from '../configs/apiConfig';
@@ -87,138 +89,49 @@ export function makeServer({environment = 'development'} = {}) {
 
     routes() {
       this.namespace = '';
-      // this.timing = 10000;//全局延时
-
-      //成功返回
-      // this.get(todosApiUrl, schema => {
-      //   return schema.todos.all().models; //默认会返回200和数据
-      // });
-
-      //失败返回
-      // this.get(todosApiUrl, _ => {
-      //   return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
-      // });
-
-      //单独延时返回
-      this.get(
-        todosApiUrl,
-        (schema) => {
-          return schema.todos.all().models;
-        },
-        {timing: 1000},
-      );
-
-      // 新增：PATCH /todos/:id 接口 - 用于切换todo状态
-      this.patch(
-        `${todosApiUrl}/:id`,
-        (schema, request) => {
-          const { id } = request.params;
-          const { completed } = JSON.parse(request.requestBody);
-
-          const todo = schema.todos.find(id);
-          if (!todo) {
-            return new Response(404, {}, { error: "Todo not found" });
-          }
-
-          // 更新todo状态
-          todo.update({ completed });
-
-          return {
-            success: true,
-            todo: todo.attrs
-          };
-        },
-        { timing: 500 } // 模拟网络延迟
-      );
-
-      // 新增：DELETE /todos/:id 接口 - 用于删除todo
-      this.delete(
-        `${todosApiUrl}/:id`,
-        (schema, request) => {
-          const { id } = request.params;
-
-          const todo = schema.todos.find(id);
-          if (!todo) {
-            return new Response(404, {}, { error: "Todo not found" });
-          }
-
-          // 删除todo
-          todo.destroy();
-
-          return {
-            success: true,
-            message: "Todo deleted successfully"
-          };
-        },
-        { timing: 500 } // 模拟网络延迟
-      );
-
-      // 新增：POST /todos 接口 - 用于添加todo
-      this.post(
-        todosApiUrl,
-        (schema, request) => {
-          const { title, username, completed = false } = JSON.parse(request.requestBody);
-          
-          // 查找或创建用户
-          let user = schema.users.findBy({ username });
-          if (!user) {
-            // 创建新用户
-            user = schema.users.create({
-              id: String(schema.users.all().models.length + 1),
-              name: username,
-              username: username,
-              email: `${username}@example.com`,
-              address: {
-                street: 'Unknown',
-                suite: 'Unknown',
-                city: 'Unknown',
-                zipcode: '00000',
-                geo: {lat: '0', lng: '0'},
-              },
-              phone: '000-000-0000',
-              website: 'example.com',
-              company: {
-                name: 'Unknown',
-                catchPhrase: 'Unknown',
-                bs: 'Unknown',
-              },
-            });
-          }
-          
-          // 创建新todo，使用用户的id
-          const newTodo = schema.todos.create({
-            title,
-            userId: Number(user.id),
-            completed
-          });
-
-          // 返回包含用户名的完整数据
-          return {
-            success: true,
-            todo: {
-              ...newTodo.attrs,
-              username: user.username // 添加用户名信息
-            }
-          };
-        },
-        { timing: 500 } // 模拟网络延迟
-      );
-
-      // this.get(usersApiUrl, schema => {
-      //   return schema.users.all().models;
-      // });
-
-      // this.get(usersApiUrl, _ => {
-      //   return new Response(404, {}, {error: ['Internal Server Error']}); // 返回500 错误
-      // });
-
-      this.get(
-        usersApiUrl,
-        schema => {
-          return schema.users.all().models;
-        },
-        {timing: 1000},
-      );
+      type RouteWithOpts = (path: string, h: (s: unknown, r?: unknown) => unknown, opts?: { timing?: number }) => void;
+      const getWithOpts: RouteWithOpts = (path, h, opts) => { (this as { get(path: string, handler?: unknown, options?: unknown): void }).get(path, h, opts); };
+      const patchWithOpts: RouteWithOpts = (path, h, opts) => { (this as { patch(path: string, handler?: unknown, options?: unknown): void }).patch(path, h, opts); };
+      const deleteWithOpts: RouteWithOpts = (path, h, opts) => { (this as { delete(path: string, handler?: unknown, options?: unknown): void }).delete(path, h, opts); };
+      const postWithOpts: RouteWithOpts = (path, h, opts) => { (this as { post(path: string, handler?: unknown, options?: unknown): void }).post(path, h, opts); };
+      getWithOpts(todosApiUrl, (schema) => (schema as { all(type: string): { models: unknown[] } }).all('todo').models, { timing: 1000 });
+      getWithOpts(`${todosApiUrl}/:id`, (schema, request) => {
+        const s = schema as { find(type: string, id: string): { attrs: { userId?: number } } | null };
+        const id = (request as { params: { id: string } }).params.id;
+        const todo = s.find('todo', id);
+        if (!todo) return new Response(404, {}, { error: "Todo not found" });
+        const user = (schema as { find(type: string, id: string): { attrs: { username: string } } | null }).find('user', String(todo.attrs.userId));
+        if (!user) return new Response(404, {}, { error: "User not found" });
+        return { ...todo.attrs, username: user.attrs.username };
+      }, { timing: 500 });
+      patchWithOpts(`${todosApiUrl}/:id`, (schema, request) => {
+        const s = schema as { find(type: string, id: string): { attrs: Record<string, unknown>; update(attrs: unknown): void } | null };
+        const id = (request as { params: { id: string }; requestBody: string }).params.id;
+        const { completed } = JSON.parse((request as { requestBody: string }).requestBody);
+        const todo = s.find('todo', id);
+        if (!todo) return new Response(404, {}, { error: "Todo not found" });
+        todo.update({ completed });
+        return { success: true, todo: todo.attrs };
+      }, { timing: 500 });
+      deleteWithOpts(`${todosApiUrl}/:id`, (schema, request) => {
+        const s = schema as { find(type: string, id: string): { destroy(): void } | null };
+        const id = (request as { params: { id: string } }).params.id;
+        const todo = s.find('todo', id);
+        if (!todo) return new Response(404, {}, { error: "Todo not found" });
+        todo.destroy();
+        return { success: true, message: "Todo deleted successfully" };
+      }, { timing: 500 });
+      postWithOpts(todosApiUrl, (schema, request) => {
+        const s = schema as { findBy(type: string, attrs: Record<string, unknown>): { attrs: { id: string; username: string } } | null; all(type: string): { models: unknown[] }; create(type: string, attrs: Record<string, unknown>): { attrs: { id: string; username: string } } };
+        const { title, username, completed = false } = JSON.parse((request as { requestBody: string }).requestBody);
+        let user = s.findBy('user', { username });
+        if (!user) {
+          user = s.create('user', { id: String(s.all('user').models.length + 1), name: username, username, email: `${username}@example.com`, address: { street: 'Unknown', suite: 'Unknown', city: 'Unknown', zipcode: '00000', geo: { lat: '0', lng: '0' } }, phone: '000-000-0000', website: 'example.com', company: { name: 'Unknown', catchPhrase: 'Unknown', bs: 'Unknown' } });
+        }
+        const newTodo = (schema as { create(type: string, attrs: Record<string, unknown>): { attrs: Record<string, unknown> } }).create('todo', { title, userId: Number(user.attrs.id), completed });
+        return { success: true, todo: { ...newTodo.attrs, username: user.attrs.username } };
+      }, { timing: 500 });
+      getWithOpts(usersApiUrl, (schema) => (schema as { all(type: string): { models: unknown[] } }).all('user').models, { timing: 1000 });
     },
   });
 }

@@ -6,16 +6,17 @@ import {Provider} from "react-redux";
 import store from "./store"; // 导入存储
 
 
-import TodoList from "./presentation/features/todos/containers/TodoListContainer";
+import TodoListContainer from "./presentation/features/todos/containers/TodoListContainer";
 import AddTodoContainer from "./presentation/features/todos/containers/AddTodoContainer";
-import {RouteConfig} from "./configs/routeConfig";
-import {CounterContainer} from "./presentation/features/counter/CounterContainer.tsx";
-import {makeServer} from "./mirage/mirageServer"; // 导入 makeServer
+import TodoDetailContainer from "./presentation/features/todos/containers/TodoDetailContainer";
+import { RouteConfig } from "./configs/routeConfig";
+import type { RootStackParamList } from "./type/navigation";
+import { CounterContainer } from "./presentation/features/counter/CounterContainer.tsx";
+import { makeServer } from "./mirage/mirageServer";
 
-// 初始化 Mirage JS 服务器 - 所有环境都使用 Mock
 makeServer();
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 // Tips：展示层-Provider
 // 定义：React-Redux 提供的顶层组件，用于把 Redux store 注入 React 组件树。
@@ -32,12 +33,17 @@ export default function App() {
         <Stack.Navigator initialRouteName={RouteConfig.TODO_LIST}>
           <Stack.Screen
             name={RouteConfig.TODO_LIST}
-            component={TodoList}
+            component={TodoListContainer}
             options={{headerShown: false}}
           />
           <Stack.Screen
             name={RouteConfig.ADD_TODO}
             component={AddTodoContainer}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name={RouteConfig.TODO_DETAIL}
+            component={TodoDetailContainer}
             options={{headerShown: false}}
           />
           <Stack.Screen
