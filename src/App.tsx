@@ -1,32 +1,47 @@
 // `App.tsx`
-import React from "react";
-import {NavigationContainer} from "@react-navigation/native";
-import {createNativeStackNavigator} from "@react-navigation/native-stack";
-import {Provider} from "react-redux";
-import store from "./store"; // 导入存储
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {Provider} from 'react-redux';
+import store from './store';
+import TodoListContainer from './presentation/features/todos/containers/TodoListContainer';
+import {RouteConfig} from './configs/routeConfig';
+import type {RootStackParamList} from './type/navigation';
+import {lazyScreen} from './presentation/components/LazyScreen';
 
+const LazyAddTodo = lazyScreen(
+  () => import('./presentation/features/todos/containers/AddTodoContainer'),
+);
 
-import TodoListContainer from "./presentation/features/todos/containers/TodoListContainer";
-import AddTodoContainer from "./presentation/features/todos/containers/AddTodoContainer";
-import TodoDetailContainer from "./presentation/features/todos/containers/TodoDetailContainer";
-import { RouteConfig } from "./configs/routeConfig";
-import type { RootStackParamList } from "./type/navigation";
-import { CounterContainer } from "./presentation/features/counter/CounterContainer.tsx";
-import { makeServer } from "./mirage/mirageServer";
+const LazyTodoDetail = lazyScreen(
+  () => import('./presentation/features/todos/containers/TodoDetailContainer'),
+);
 
-makeServer();
+const LazyCounter = lazyScreen(() =>
+  import('./presentation/features/counter/CounterContainer').then(m => ({
+    default: m.CounterContainer,
+  })),
+);
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Tips：展示层-Provider
-// 定义：React-Redux 提供的顶层组件，用于把 Redux store 注入 React 组件树。
-// 职责：
-// 1. 将 store 放入 React Context，供子组件的 useSelector / useDispatch 读取。
-// 2. 保证整个应用共享唯一状态源。
-// 优势：
-// • 无需手动传递 props，即可在任意深度组件访问全局状态；
-// • 只渲染一次，性能开销可忽略。
+let mirageStarted = false;
+function ensureMirageServer() {
+  if (!mirageStarted) {
+    const {makeServer} = require('./mirage/mirageServer') as {
+      makeServer: (opts?: {environment?: string}) => ReturnType<
+        typeof import('./mirage/mirageServer').makeServer
+      >;
+    };
+    makeServer();
+    mirageStarted = true;
+  }
+}
+
 export default function App() {
+  // Sync before children mount so TodoListContainer's useEffect fetch sees Mirage.
+  ensureMirageServer();
+
   return (
     <Provider store={store}>
       <NavigationContainer>
@@ -38,17 +53,17 @@ export default function App() {
           />
           <Stack.Screen
             name={RouteConfig.ADD_TODO}
-            component={AddTodoContainer}
+            component={LazyAddTodo}
             options={{headerShown: false}}
           />
           <Stack.Screen
             name={RouteConfig.TODO_DETAIL}
-            component={TodoDetailContainer}
+            component={LazyTodoDetail}
             options={{headerShown: false}}
           />
           <Stack.Screen
             name={RouteConfig.COUNTER}
-            component={CounterContainer}
+            component={LazyCounter}
             options={{headerShown: false}}
           />
         </Stack.Navigator>
