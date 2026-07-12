@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      { "command": "node ./.cursor/scripts/hooks/guard-shell.js" }
+    ],
+    "afterFileEdit": [
+      { "command": "node ./.cursor/scripts/hooks/format-edited.js" }
+    ]
+  }
+}

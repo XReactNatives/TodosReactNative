@@ -1,0 +1,42 @@
+---
+description: TodosReactNative 四层单向依赖架构约束；涉及 src 下任何跨层代码（新增功能、移动逻辑、改依赖）时遵守
+globs: src/**
+alwaysApply: false
+---
+
+# 四层单向依赖架构
+
+数据流唯一合法链路：
+
+```
+service → domain(可选) → state(thunk → slice → selector) → presentation
+```
+
+## 必须遵守
+
+- **展示层**（`src/presentation`）只能从状态层取数：`useAppSelector` + selector、`useAppDispatch` + thunk/action。禁止 import `src/service` 或 `src/domain`。
+- **状态层**（`src/state/store`）的 thunk 通过 domain（有业务规则时）或 service 取数；组件里不发请求。
+- **领域层**（`src/domain`）只做业务规则校验与 API→State 数据转换，不 import React / Redux / react-native。
+- **服务层**（`src/service`）只封装网络，不含业务规则、不含 UI。
+- 数据自下而上流动，**禁止反向依赖与跨层调用**。
+
+## 正例
+
+```ts
+// 展示层：只 dispatch thunk，不碰 service
+dispatch(fetchTodosAndUsersNormalizedAsync());
+// 状态层 thunk：调 domain
+return await getTodosAndUsersNormalized();
+// 领域层：调 service
+const todos = await fetchTodosFromAPI();
+```
+
+## 反例（拒绝）
+
+```tsx
+// ❌ 展示层直接调 service，跨过 state/domain
+import { fetchTodosFromAPI } from "../../../service/todosService";
+useEffect(() => { fetchTodosFromAPI().then(setLocal); }, []);
+```
+
+修正：把请求收敛到 `src/state/store/todos/todosThunks.ts`，组件只 `dispatch`。

@@ -1,0 +1,28 @@
+name: cursor-auto-fix
+
+# CI 失败后触发：用 Cursor SDK 云端 Agent 定位根因、修复并自动开 PR（L5 端到端）。
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+jobs:
+  auto-fix:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install SDK
+        working-directory: automation
+        run: npm install
+      - name: Run auto-fix
+        working-directory: automation
+        env:
+          # 用团队 Service Account key，计费归团队（在仓库 Secrets 配置）
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+          FAILURE_LOG: 'CI workflow 失败，见 GitHub Actions 运行详情。'
+        run: node auto-fix.mjs

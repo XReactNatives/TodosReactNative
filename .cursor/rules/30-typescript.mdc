@@ -1,0 +1,28 @@
+---
+description: TypeScript 类型规范；编写或修改任意 .ts/.tsx 时遵守
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript 规范
+
+- **禁止 `any`**。确需未知类型用 `unknown` 并在使用处收窄（参考 `utils/error.ts` 的 `handleApiError`）。
+- 类型分层放置：
+  - API 请求/响应类型 → `src/type/api/*`（经 `src/type/api.d.ts` 统一导出）。
+  - 状态层数据类型 → `src/type/state/*`（如 `TodoWithUsername` / `NormalizedTodos`）。
+  - UI 展示类型 → `src/type/ui/*`。
+  - 错误类型 → `src/type/error.ts`（`AppError` / `ErrorCode`）。
+- 组件 props 显式声明 `interface XxxProps`。
+- 外部数据（网络返回、Mirage、深链参数）在边界处校验后再进入应用，不盲信结构。
+- 导航参数用 `src/type/navigation.d.ts` 的 `RootStackParamList` 类型化。
+
+## 反例
+
+```ts
+// ❌ 丢掉类型价值
+const result: any = await api.get("/todos");
+// ❌ thunk 泛型偷懒
+createAsyncThunk<any, void>(...)
+```
+
+正确：为返回值声明 `FetchTodosResult` 等具体类型；thunk 第一泛型填 `*Result`。

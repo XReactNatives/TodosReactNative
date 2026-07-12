@@ -1,0 +1,16 @@
+{
+  "name": "todos-rn-automation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cursor SDK 编排脚本（本地流式 / 纵切生成 / CI 自动修复）",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "summarize": "node summarize.mjs",
+    "gen-slice": "node gen-slice.mjs",
+    "auto-fix": "node auto-fix.mjs"
+  },
+  "dependencies": {
+    "@cursor/sdk": "latest"
+  }
+}

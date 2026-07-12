@@ -1,0 +1,36 @@
+---
+description: 服务层（网络请求封装）规范；编写或修改 src/service 下的 service 时遵守
+globs: src/service/**
+alwaysApply: false
+---
+
+# 服务层：网络封装规范
+
+- 只负责发起 HTTP 请求、返回 `Promise`，**不含业务规则、不含 UI/状态逻辑**。
+- 统一走 `src/utils/api.ts` 的实例 `api`（`api.get/post/patch/delete<T>`），不直接 `fetch`。
+- 端点用文件顶部常量集中声明（如 `const todosEndpoint = "/todos"`）。
+- 参数/返回类型来自 `src/type/api/*`，函数签名显式标注泛型 `api.get<FetchTodosResult>(...)`。
+- 命名约定：`xxxFromAPI`（如 `fetchTodosFromAPI` / `addTodoFromAPI`）。
+- 业务规则（分组、校验、数据转换）不放这里，放 `src/domain`。
+
+## 正例
+
+```ts
+import { api } from "../utils/api";
+import type { FetchTodosResult } from "../type/api";
+
+const todosEndpoint = "/todos";
+
+export const fetchTodosFromAPI = async (): Promise<FetchTodosResult> =>
+  api.get<FetchTodosResult>(todosEndpoint);
+```
+
+## 反例
+
+```ts
+// ❌ 服务层混入业务规则/分组
+export const fetchTodosFromAPI = async () => {
+  const todos = await api.get("/todos");
+  return groupByUsername(todos); // 应放 domain
+};
+```

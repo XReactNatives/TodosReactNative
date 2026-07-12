@@ -1,0 +1,6 @@
+node_modules/
+# Cursor SDK 编排脚本使用 ESM/顶层 await，非 RN 源码，不走 @react-native lint
+automation/
+# Cursor hook 脚本为 Node 脚本（dotfolder 默认已忽略，此处显式声明）
+.cursor/
+scripts/

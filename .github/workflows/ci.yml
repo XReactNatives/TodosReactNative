@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install deps
+        run: npm ci
+      - name: Lint
+        run: npx eslint .
+      # 类型检查暂为非阻塞：项目存在预置类型债（App.tsx 动态 import 的 module 配置、
+      # bundles/todos.entry.ts 引用尚未实现的 host/featureRegistry 等）。逐步清零后改为阻塞。
+      - name: Typecheck (non-blocking, surfaces pre-existing type debt)
+        run: npx tsc --noEmit
+        continue-on-error: true
+      - name: Test
+        run: npm test -- --watchAll=false

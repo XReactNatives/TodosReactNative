@@ -1,0 +1,46 @@
+---
+description: 展示层（React Native 组件）规范与过渡渲染优化；编写或修改 src/presentation 下的容器/组件时遵守
+globs: src/presentation/**
+alwaysApply: false
+---
+
+# 展示层：容器/组件与性能
+
+## 容器 vs 组件（单一职责）
+
+- **容器**（`containers/`）：组合布局、触发取数（`useEffect` + dispatch thunk）、管 UI 局部状态（如 `filter`）。用 `useCallback` 稳定下传回调，`useEffect` 依赖精确。
+- **组件**（`components/`）：渲染 + 直接订阅业务状态（`useAppSelector` + selector）+ dispatch。不含业务逻辑。
+
+## 过渡渲染优化（本项目硬要求）
+
+- 纯展示组件用 `React.memo` 包裹（现有 `TodoItem`/`StatusFilter`/`TodoActions` 已 memo）。
+- 事件处理用 `useCallback`，依赖数组精确（如 `[dispatch, todo.id]`）。
+- 派生数据用记忆化 selector（`createSelector`），不在组件内计算。
+
+## 列表
+
+- `SectionList` / `FlatList` 用稳定 `keyExtractor`（如 `item => item.id.toString()`）。
+- `renderItem` / `renderSectionHeader` 避免每次渲染都创建新引用的内联对象/内联复杂闭包。
+
+## 正例
+
+```tsx
+const TodoItem: React.FC<TodoItemProps> = React.memo(({ todo }) => {
+  const dispatch = useAppDispatch();
+  const handleDelete = React.useCallback(() => {
+    dispatch(deleteTodoAsync(todo.id));
+  }, [dispatch, todo.id]);
+  // ...
+});
+```
+
+## 反例
+
+```tsx
+// ❌ 未 memo + 每次渲染新建函数引用，父组件重渲染即连带重渲染
+const TodoItem = ({ todo }) => {
+  const handleDelete = () => dispatch(deleteTodoAsync(todo.id));
+};
+// ❌ renderItem 内联箭头 + 内联样式对象，memo 失效
+<FlatList renderItem={({ item }) => <Row style={{ padding: 8 }} item={item} />} />
+```

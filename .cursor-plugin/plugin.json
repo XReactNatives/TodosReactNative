@@ -1,0 +1,6 @@
+{
+  "name": "todos-rn-toolkit",
+  "description": "TodosReactNative 四层架构工具箱：Rules(架构守卫) + Skills(纵切生成/分层审查) + Commands(质量门/运行/分包) + Agents(架构&性能评审) + Hooks(危险命令拦截/自动格式化) + MCP(GitHub/文件系统)。",
+  "version": "0.1.0",
+  "author": { "name": "TodosReactNative Team" }
+}

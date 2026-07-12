@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction, type SerializedError } from "@reduxjs/toolkit";
 import type { AppError } from "../../../type/error";
-import type { TodoWithUsername, NormalizedTodos, NormalizedUsers, SectionsExpanded } from "../../../type/state/todo";
-import type { User } from "../../../type/api/user";
+import type { NormalizedTodos, NormalizedUsers, SectionsExpanded } from "../../../type/state/todo";
 import { fetchTodosAndUsersNormalizedAsync, toggleTodoStatusAsync, deleteTodoAsync, addTodoAsync, fetchTodoDetailAsync } from "./todosThunks.ts";
 
 interface TodosState {
